@@ -26,12 +26,53 @@ inputs:
 outputs:
   bun-version:
     description: "The installed Bun version"
+    value: ${{ steps.install.outputs.bun-version }}
   bun-path:
     description: "Path to the Bun binary"
+    value: ${{ steps.install.outputs.bun-path }}
   cache-hit:
     description: "Whether the Bun binary was restored from cache"
+    value: ${{ steps.cache-restore.outputs.cache-hit || 'false' }}
 
 runs:
-  using: "node20"
-  main: "dist/index.js"
-  post: "dist/post.js"
+  using: "composite"
+  steps:
+    - name: Resolve version
+      id: resolve
+      shell: bash
+      env:
+        INPUT_BUN_VERSION: ${{ inputs.bun-version }}
+        INPUT_BUN_VERSION_FILE: ${{ inputs.bun-version-file }}
+        INPUT_TOKEN: ${{ inputs.token }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/resolve-version.sh"
+        resolve_version
+
+    - name: Restore cache
+      id: cache-restore
+      if: inputs.no-cache != 'true' && steps.resolve.outputs.bun-version != 'canary'
+      uses: actions/cache/restore@v4
+      with:
+        path: ${{ runner.tool_cache }}/bun/${{ steps.resolve.outputs.bun-version }}
+        key: bun-${{ runner.os }}-${{ runner.arch }}-${{ steps.resolve.outputs.bun-version }}
+
+    - name: Install Bun
+      id: install
+      shell: bash
+      env:
+        RESOLVED_VERSION: ${{ steps.resolve.outputs.bun-version }}
+        DOWNLOAD_URL: ${{ steps.resolve.outputs.download-url }}
+        CACHE_HIT: ${{ steps.cache-restore.outputs.cache-hit || 'false' }}
+        TOOL_CACHE: ${{ runner.tool_cache }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/install-bun.sh"
+        install_bun
+
+    - name: Save cache
+      if: inputs.no-cache != 'true' && steps.resolve.outputs.bun-version != 'canary' && steps.cache-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ${{ runner.tool_cache }}/bun/${{ steps.resolve.outputs.bun-version }}
+        key: bun-${{ runner.os }}-${{ runner.arch }}-${{ steps.resolve.outputs.bun-version }}

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Synchronize the version from the root VERSION file to all action package.json files.
+ * Synchronize the version from the root VERSION file to all versioned files.
  * Usage: node scripts/sync-versions.js [--check]
  *
  * --check: Exit with error if versions are out of sync (for CI)
@@ -11,7 +11,11 @@ const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
 const VERSION_FILE = path.join(ROOT, "VERSION");
-const ACTION_DIRS = ["actions/setup-bun", "actions/gh-release", "actions/fossa-scan"];
+
+// Files that contain a version field to sync
+const VERSIONED_PACKAGE_JSONS = [
+  "site/package.json",
+];
 
 function main() {
   const checkOnly = process.argv.includes("--check");
@@ -24,45 +28,40 @@ function main() {
 
   console.log(`Monorepo version: ${version}`);
 
-  // Update root package.json
-  const rootPkgPath = path.join(ROOT, "package.json");
-  updatePackageJson(rootPkgPath, version, checkOnly);
+  let hasError = false;
 
-  // Update each action's package.json
-  for (const dir of ACTION_DIRS) {
-    const pkgPath = path.join(ROOT, dir, "package.json");
-    if (fs.existsSync(pkgPath)) {
-      updatePackageJson(pkgPath, version, checkOnly);
+  // Update each versioned package.json
+  for (const relPath of VERSIONED_PACKAGE_JSONS) {
+    const pkgPath = path.join(ROOT, relPath);
+    if (!fs.existsSync(pkgPath)) {
+      console.log(`  ${relPath}: not found (skipping)`);
+      continue;
     }
+
+    const content = fs.readFileSync(pkgPath, "utf-8");
+    const pkg = JSON.parse(content);
+
+    if (pkg.version === version) {
+      console.log(`  ${relPath}: ${version} (ok)`);
+      continue;
+    }
+
+    if (checkOnly) {
+      console.error(`  ${relPath}: expected ${version}, got ${pkg.version}`);
+      hasError = true;
+      continue;
+    }
+
+    pkg.version = version;
+    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n", "utf-8");
+    console.log(`  ${relPath}: updated to ${version}`);
   }
 
-  if (checkOnly) {
-    console.log("All versions are in sync.");
-  } else {
-    console.log("All versions synchronized.");
-  }
-}
-
-function updatePackageJson(pkgPath, version, checkOnly) {
-  const content = fs.readFileSync(pkgPath, "utf-8");
-  const pkg = JSON.parse(content);
-  const relativePath = path.relative(ROOT, pkgPath);
-
-  if (pkg.version === version) {
-    console.log(`  ${relativePath}: ${version} (ok)`);
-    return;
-  }
-
-  if (checkOnly) {
-    console.error(
-      `  ${relativePath}: expected ${version}, got ${pkg.version}`
-    );
+  if (hasError) {
     process.exit(1);
   }
 
-  pkg.version = version;
-  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n", "utf-8");
-  console.log(`  ${relativePath}: updated to ${version}`);
+  console.log(checkOnly ? "All versions are in sync." : "All versions synchronized.");
 }
 
 main();

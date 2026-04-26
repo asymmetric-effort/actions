@@ -65,13 +65,55 @@ inputs:
 outputs:
   url:
     description: "HTML URL of the release"
+    value: ${{ steps.release.outputs.url }}
   id:
     description: "Release ID"
+    value: ${{ steps.release.outputs.id }}
   upload_url:
     description: "Upload URL for additional assets"
+    value: ${{ steps.release.outputs.upload_url }}
   assets:
     description: "JSON array of uploaded asset metadata"
+    value: ${{ steps.upload.outputs.assets }}
 
 runs:
-  using: "node20"
-  main: "dist/index.js"
+  using: "composite"
+  steps:
+    - name: Create or update release
+      id: release
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        INPUT_TAG_NAME: ${{ inputs.tag_name }}
+        INPUT_NAME: ${{ inputs.name }}
+        INPUT_BODY: ${{ inputs.body }}
+        INPUT_BODY_PATH: ${{ inputs.body_path }}
+        INPUT_DRAFT: ${{ inputs.draft }}
+        INPUT_PRERELEASE: ${{ inputs.prerelease }}
+        INPUT_TARGET_COMMITISH: ${{ inputs.target_commitish }}
+        INPUT_GENERATE_RELEASE_NOTES: ${{ inputs.generate_release_notes }}
+        INPUT_MAKE_LATEST: ${{ inputs.make_latest }}
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_WORKING_DIRECTORY: ${{ inputs.working_directory }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/create-release.sh"
+        create_or_update_release
+
+    - name: Upload assets
+      id: upload
+      if: inputs.files != ''
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        INPUT_FILES: ${{ inputs.files }}
+        INPUT_WORKING_DIRECTORY: ${{ inputs.working_directory }}
+        INPUT_OVERWRITE_FILES: ${{ inputs.overwrite_files }}
+        INPUT_FAIL_ON_UNMATCHED_FILES: ${{ inputs.fail_on_unmatched_files }}
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        RELEASE_ID: ${{ steps.release.outputs.id }}
+        UPLOAD_URL: ${{ steps.release.outputs.upload_url }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/upload-assets.sh"
+        upload_assets
