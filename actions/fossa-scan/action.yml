@@ -1,0 +1,153 @@
+name: "FOSSA Scan"
+description: "Run FOSSA license compliance and security scanning"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "shield"
+  color: "blue"
+
+inputs:
+  api-key:
+    description: "FOSSA API key"
+    required: true
+  run-tests:
+    description: "Run fossa test after analysis"
+    required: false
+    default: "false"
+  endpoint:
+    description: "FOSSA server endpoint"
+    required: false
+    default: "https://app.fossa.com"
+  project:
+    description: "Project name override"
+    required: false
+  branch:
+    description: "Branch name override"
+    required: false
+  working-directory:
+    description: "Working directory for analysis"
+    required: false
+    default: "."
+  cli-version:
+    description: "FOSSA CLI version to install (e.g., v3.9.0)"
+    required: false
+    default: "latest"
+  debug:
+    description: "Enable debug output"
+    required: false
+    default: "false"
+
+outputs:
+  test-result:
+    description: "Result of fossa test (pass/fail)"
+    value: ${{ steps.test.outputs.result }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate inputs
+      shell: bash
+      run: |
+        if [ -z "${{ inputs.api-key }}" ]; then
+          echo "::error::api-key input is required"
+          exit 1
+        fi
+
+    - name: Install FOSSA CLI
+      id: install
+      shell: bash
+      env:
+        FOSSA_CLI_VERSION: ${{ inputs.cli-version }}
+      run: |
+        set -euo pipefail
+
+        INSTALL_DIR="${RUNNER_TEMP:-/tmp}/fossa-bin"
+        mkdir -p "${INSTALL_DIR}"
+
+        OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+        ARCH="$(uname -m)"
+
+        case "${ARCH}" in
+          x86_64)  ARCH="amd64" ;;
+          aarch64) ARCH="arm64" ;;
+          arm64)   ARCH="arm64" ;;
+          *)
+            echo "::error::Unsupported architecture: ${ARCH}"
+            exit 1
+            ;;
+        esac
+
+        case "${OS}" in
+          linux|darwin) ;;
+          *)
+            echo "::error::Unsupported OS: ${OS}"
+            exit 1
+            ;;
+        esac
+
+        if [ "${FOSSA_CLI_VERSION}" = "latest" ]; then
+          DOWNLOAD_URL="https://github.com/fossas/fossa-cli/releases/latest/download/fossa_${OS}_${ARCH}.zip"
+        else
+          VERSION="${FOSSA_CLI_VERSION#v}"
+          DOWNLOAD_URL="https://github.com/fossas/fossa-cli/releases/download/v${VERSION}/fossa_${OS}_${ARCH}.zip"
+        fi
+
+        echo "Downloading FOSSA CLI from ${DOWNLOAD_URL}"
+        curl -fsSL -o "${INSTALL_DIR}/fossa.zip" "${DOWNLOAD_URL}"
+        unzip -o -q "${INSTALL_DIR}/fossa.zip" -d "${INSTALL_DIR}"
+        rm -f "${INSTALL_DIR}/fossa.zip"
+        chmod +x "${INSTALL_DIR}/fossa"
+
+        echo "${INSTALL_DIR}" >> "${GITHUB_PATH}"
+        echo "FOSSA CLI installed to ${INSTALL_DIR}"
+        "${INSTALL_DIR}/fossa" --version
+
+    - name: Run FOSSA analyze
+      shell: bash
+      env:
+        FOSSA_API_KEY: ${{ inputs.api-key }}
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+
+        ARGS=()
+        ARGS+=("--endpoint" "${{ inputs.endpoint }}")
+
+        if [ -n "${{ inputs.project }}" ]; then
+          ARGS+=("--project" "${{ inputs.project }}")
+        fi
+
+        if [ -n "${{ inputs.branch }}" ]; then
+          ARGS+=("--branch" "${{ inputs.branch }}")
+        fi
+
+        if [ "${{ inputs.debug }}" = "true" ]; then
+          ARGS+=("--debug")
+        fi
+
+        echo "Running: fossa analyze ${ARGS[*]}"
+        fossa analyze "${ARGS[@]}"
+
+    - name: Run FOSSA test
+      id: test
+      if: inputs.run-tests == 'true'
+      shell: bash
+      env:
+        FOSSA_API_KEY: ${{ inputs.api-key }}
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+
+        ARGS=()
+        ARGS+=("--endpoint" "${{ inputs.endpoint }}")
+
+        if [ "${{ inputs.debug }}" = "true" ]; then
+          ARGS+=("--debug")
+        fi
+
+        if fossa test "${ARGS[@]}"; then
+          echo "result=pass" >> "${GITHUB_OUTPUT}"
+        else
+          echo "result=fail" >> "${GITHUB_OUTPUT}"
+          exit 1
+        fi

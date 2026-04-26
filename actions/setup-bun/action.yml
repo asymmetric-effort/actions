@@ -1,0 +1,37 @@
+name: "Setup Bun"
+description: "Install and configure the Bun JavaScript runtime"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "box"
+  color: "orange"
+
+inputs:
+  bun-version:
+    description: "Bun version to install (semver, 'latest', or 'canary')"
+    required: false
+    default: "latest"
+  bun-version-file:
+    description: "File to read Bun version from (e.g., package.json, .tool-versions)"
+    required: false
+  no-cache:
+    description: "Disable caching of the Bun binary"
+    required: false
+    default: "false"
+  token:
+    description: "GitHub token for API requests (avoids rate limits)"
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  bun-version:
+    description: "The installed Bun version"
+  bun-path:
+    description: "Path to the Bun binary"
+  cache-hit:
+    description: "Whether the Bun binary was restored from cache"
+
+runs:
+  using: "node20"
+  main: "dist/index.js"
+  post: "dist/post.js"

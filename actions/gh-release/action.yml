@@ -1,0 +1,77 @@
+name: "GitHub Release"
+description: "Create or update GitHub Releases with asset uploads"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "tag"
+  color: "green"
+
+inputs:
+  tag_name:
+    description: "Git tag for the release"
+    required: false
+    default: ${{ github.ref_name }}
+  name:
+    description: "Release name (defaults to tag name)"
+    required: false
+  body:
+    description: "Release notes text"
+    required: false
+  body_path:
+    description: "Path to file containing release notes"
+    required: false
+  draft:
+    description: "Create as draft release"
+    required: false
+    default: "false"
+  prerelease:
+    description: "Mark as prerelease"
+    required: false
+    default: "false"
+  files:
+    description: "Newline-delimited glob patterns for assets to upload"
+    required: false
+  working_directory:
+    description: "Base directory for resolving file globs"
+    required: false
+    default: ${{ github.workspace }}
+  overwrite_files:
+    description: "Replace existing assets with the same name"
+    required: false
+    default: "true"
+  fail_on_unmatched_files:
+    description: "Fail if a glob pattern matches no files"
+    required: false
+    default: "false"
+  target_commitish:
+    description: "Commitish for tag creation"
+    required: false
+  generate_release_notes:
+    description: "Auto-generate release notes via GitHub API"
+    required: false
+    default: "false"
+  make_latest:
+    description: "Mark as latest release (true/false/legacy)"
+    required: false
+  token:
+    description: "GitHub token"
+    required: false
+    default: ${{ github.token }}
+  repository:
+    description: "Target repository (owner/repo)"
+    required: false
+    default: ${{ github.repository }}
+
+outputs:
+  url:
+    description: "HTML URL of the release"
+  id:
+    description: "Release ID"
+  upload_url:
+    description: "Upload URL for additional assets"
+  assets:
+    description: "JSON array of uploaded asset metadata"
+
+runs:
+  using: "node20"
+  main: "dist/index.js"
