@@ -1,0 +1,203 @@
+import { createElement } from '@asymmetric-effort/specifyjs';
+
+interface ActionInput {
+  name: string;
+  description: string;
+  required: boolean;
+  default?: string;
+}
+
+interface ActionOutput {
+  name: string;
+  description: string;
+}
+
+interface ActionData {
+  name: string;
+  description: string;
+  badge: string;
+  badgeColor: string;
+  usage: string;
+  inputs: ActionInput[];
+  outputs: ActionOutput[];
+}
+
+const actions: Record<string, ActionData> = {
+  'setup-bun': {
+    name: 'Setup Bun',
+    description: 'Install and configure the Bun JavaScript runtime in your GitHub Actions workflows. Supports version pinning, version files, and binary caching for fast CI builds.',
+    badge: 'Runtime',
+    badgeColor: 'badge-orange',
+    usage: `- uses: asymmetric-effort/actions/actions/setup-bun@v1
+  with:
+    bun-version: "latest"
+
+# Pin to a specific version
+- uses: asymmetric-effort/actions/actions/setup-bun@v1
+  with:
+    bun-version: "1.1.0"
+
+# Read version from package.json
+- uses: asymmetric-effort/actions/actions/setup-bun@v1
+  with:
+    bun-version-file: "package.json"`,
+    inputs: [
+      { name: 'bun-version', description: 'Bun version to install (semver, "latest", or "canary")', required: false, default: 'latest' },
+      { name: 'bun-version-file', description: 'File to read Bun version from (e.g., package.json, .tool-versions)', required: false },
+      { name: 'no-cache', description: 'Disable caching of the Bun binary', required: false, default: 'false' },
+      { name: 'token', description: 'GitHub token for API requests (avoids rate limits)', required: false, default: '${{ github.token }}' },
+    ],
+    outputs: [
+      { name: 'bun-version', description: 'The installed Bun version' },
+      { name: 'bun-path', description: 'Path to the Bun binary' },
+      { name: 'cache-hit', description: 'Whether the Bun binary was restored from cache' },
+    ],
+  },
+  'fossa-scan': {
+    name: 'FOSSA Scan',
+    description: 'Run FOSSA license compliance and security scanning in your CI pipeline. Automatically installs the FOSSA CLI, runs analysis, and optionally tests for policy violations.',
+    badge: 'Security',
+    badgeColor: 'badge-blue',
+    usage: `# Basic usage
+- uses: asymmetric-effort/actions/actions/fossa-scan@v1
+  with:
+    api-key: \${{ secrets.FOSSA_API_KEY }}
+
+# With compliance testing
+- uses: asymmetric-effort/actions/actions/fossa-scan@v1
+  with:
+    api-key: \${{ secrets.FOSSA_API_KEY }}
+    run-tests: "true"`,
+    inputs: [
+      { name: 'api-key', description: 'FOSSA API key', required: true },
+      { name: 'run-tests', description: 'Run fossa test after analysis', required: false, default: 'false' },
+      { name: 'endpoint', description: 'FOSSA server endpoint', required: false, default: 'https://app.fossa.com' },
+      { name: 'project', description: 'Project name override', required: false },
+      { name: 'branch', description: 'Branch name override', required: false },
+      { name: 'working-directory', description: 'Working directory for analysis', required: false, default: '.' },
+      { name: 'cli-version', description: 'FOSSA CLI version to install', required: false, default: 'latest' },
+      { name: 'debug', description: 'Enable debug output', required: false, default: 'false' },
+    ],
+    outputs: [
+      { name: 'test-result', description: 'Result of fossa test (pass/fail)' },
+    ],
+  },
+  'gh-release': {
+    name: 'GitHub Release',
+    description: 'Create or update GitHub Releases with asset uploads. Supports draft releases, prereleases, auto-generated release notes, and glob-based file uploads.',
+    badge: 'Release',
+    badgeColor: 'badge-green',
+    usage: `# Create a release on tag push
+- uses: asymmetric-effort/actions/actions/gh-release@v1
+  with:
+    tag_name: \${{ github.ref_name }}
+    generate_release_notes: "true"
+
+# Upload build artifacts
+- uses: asymmetric-effort/actions/actions/gh-release@v1
+  with:
+    files: |
+      dist/*.tar.gz
+      dist/*.zip`,
+    inputs: [
+      { name: 'tag_name', description: 'Git tag for the release', required: false, default: '${{ github.ref_name }}' },
+      { name: 'name', description: 'Release name (defaults to tag name)', required: false },
+      { name: 'body', description: 'Release notes text', required: false },
+      { name: 'body_path', description: 'Path to file containing release notes', required: false },
+      { name: 'draft', description: 'Create as draft release', required: false, default: 'false' },
+      { name: 'prerelease', description: 'Mark as prerelease', required: false, default: 'false' },
+      { name: 'files', description: 'Newline-delimited glob patterns for assets to upload', required: false },
+      { name: 'working_directory', description: 'Base directory for resolving file globs', required: false, default: '${{ github.workspace }}' },
+      { name: 'overwrite_files', description: 'Replace existing assets with the same name', required: false, default: 'true' },
+      { name: 'fail_on_unmatched_files', description: 'Fail if a glob pattern matches no files', required: false, default: 'false' },
+      { name: 'target_commitish', description: 'Commitish for tag creation', required: false },
+      { name: 'generate_release_notes', description: 'Auto-generate release notes via GitHub API', required: false, default: 'false' },
+      { name: 'make_latest', description: 'Mark as latest release (true/false/legacy)', required: false },
+      { name: 'token', description: 'GitHub token', required: false, default: '${{ github.token }}' },
+      { name: 'repository', description: 'Target repository (owner/repo)', required: false, default: '${{ github.repository }}' },
+    ],
+    outputs: [
+      { name: 'url', description: 'HTML URL of the release' },
+      { name: 'id', description: 'Release ID' },
+      { name: 'upload_url', description: 'Upload URL for additional assets' },
+      { name: 'assets', description: 'JSON array of uploaded asset metadata' },
+    ],
+  },
+};
+
+function InputsTable(props: { inputs: ActionInput[] }): ReturnType<typeof createElement> {
+  return createElement('table', { className: 'param-table' },
+    createElement('thead', null,
+      createElement('tr', null,
+        createElement('th', null, 'Input'),
+        createElement('th', null, 'Description'),
+        createElement('th', null, 'Required'),
+        createElement('th', null, 'Default'),
+      ),
+    ),
+    createElement('tbody', null,
+      ...props.inputs.map((input) =>
+        createElement('tr', { key: input.name },
+          createElement('td', null, createElement('span', { className: 'param-name' }, input.name)),
+          createElement('td', null, input.description),
+          createElement('td', null, input.required
+            ? createElement('span', { className: 'param-required' }, 'Yes')
+            : 'No'),
+          createElement('td', null, input.default
+            ? createElement('span', { className: 'param-default' }, input.default)
+            : '-'),
+        ),
+      ),
+    ),
+  );
+}
+
+function OutputsTable(props: { outputs: ActionOutput[] }): ReturnType<typeof createElement> {
+  return createElement('table', { className: 'param-table' },
+    createElement('thead', null,
+      createElement('tr', null,
+        createElement('th', null, 'Output'),
+        createElement('th', null, 'Description'),
+      ),
+    ),
+    createElement('tbody', null,
+      ...props.outputs.map((output) =>
+        createElement('tr', { key: output.name },
+          createElement('td', null, createElement('span', { className: 'param-name' }, output.name)),
+          createElement('td', null, output.description),
+        ),
+      ),
+    ),
+  );
+}
+
+interface ActionDocsProps {
+  slug: string;
+}
+
+export function ActionDocs(props: ActionDocsProps): ReturnType<typeof createElement> {
+  const action = actions[props.slug];
+  if (!action) {
+    return createElement('p', null, 'Action not found.');
+  }
+
+  return createElement('div', { className: 'section' },
+    createElement('div', { className: 'action-card' },
+      createElement('div', { className: 'action-card-header' },
+        createElement('span', { className: `action-badge ${action.badgeColor}` }, action.badge),
+        createElement('h2', { style: 'font-size:20px;font-weight:600;margin:0;' }, action.name),
+      ),
+      createElement('div', { className: 'action-card-body' },
+        createElement('p', null, action.description),
+        createElement('h3', null, 'Usage'),
+        createElement('div', { className: 'code-block' },
+          createElement('pre', null, action.usage),
+        ),
+        createElement('h3', null, 'Inputs'),
+        createElement(InputsTable, { inputs: action.inputs }),
+        createElement('h3', null, 'Outputs'),
+        createElement(OutputsTable, { outputs: action.outputs }),
+      ),
+    ),
+  );
+}

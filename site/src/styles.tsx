@@ -387,6 +387,19 @@ export function injectStyles(): void {
       text-decoration: none;
     }
 
+    /* Card links */
+    .action-card-link {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      transition: box-shadow 0.15s;
+    }
+
+    .action-card-link:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      text-decoration: none;
+    }
+
     /* Responsive */
     @media (max-width: 640px) {
       .header-inner {
