@@ -6,12 +6,14 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:pdv": "playwright test --config playwright.pdv.config.ts"
   },
   "dependencies": {
     "@asymmetric-effort/specifyjs": "latest"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "typescript": "^5.4.0",
     "vite": "^5.4.0"
   }

@@ -8,3 +8,5 @@ coverage/
 tmp/
 site/dist/
 site/node_modules/
+site/pdv-report/
+site/test-results/

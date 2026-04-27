@@ -1,5 +1,5 @@
-import { createElement, useState, useEffect } from '@asymmetric-effort/specifyjs';
-import { injectStyles } from './styles';
+import { createElement } from '@asymmetric-effort/specifyjs';
+import { render } from '@asymmetric-effort/specifyjs/dom';
 import { Header } from './components/Header';
 import { Navigation } from './components/Navigation';
 import { HomePage } from './components/HomePage';
@@ -15,38 +15,52 @@ function getRoute(): Route {
   return valid.includes(hash as Route) ? (hash as Route) : 'home';
 }
 
-export function App(): ReturnType<typeof createElement> {
-  injectStyles();
-
-  const [route, setRoute] = useState<Route>(getRoute);
-
-  useEffect(() => {
-    const handler = (): void => {
-      setRoute(getRoute());
-      window.scrollTo(0, 0);
-    };
-    window.addEventListener('hashchange', handler);
-    return () => window.removeEventListener('hashchange', handler);
-  }, []);
-
-  let content: ReturnType<typeof createElement>;
+function renderContent(route: Route): ReturnType<typeof createElement> {
   switch (route) {
     case 'setup-bun':
     case 'fossa-scan':
     case 'gh-release':
-      content = createElement(ActionDocs, { slug: route });
-      break;
+      return createElement(ActionDocs, { slug: route });
     case 'security':
-      content = createElement(SecurityPage, null);
-      break;
+      return createElement(SecurityPage, null);
     default:
-      content = createElement(HomePage, null);
+      return createElement(HomePage, null);
+  }
+}
+
+function renderApp(): void {
+  const route = getRoute();
+  const container = document.getElementById('root');
+  if (!container) return;
+
+  const tree = createElement('div', { className: 'site-wrapper' },
+    createElement(Header, null),
+    createElement(Navigation, { route }),
+    createElement('main', { className: 'site-main' }, renderContent(route)),
+    createElement(Footer, null),
+  );
+
+  render(tree, container);
+}
+
+export function App(): ReturnType<typeof createElement> {
+  const route = getRoute();
+
+  // Set up hash-based routing via DOM events (outside render cycle)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const win = window as any;
+  if (typeof window !== 'undefined' && !win.__routerInit) {
+    win.__routerInit = true;
+    window.addEventListener('hashchange', () => {
+      renderApp();
+      window.scrollTo(0, 0);
+    });
   }
 
   return createElement('div', { className: 'site-wrapper' },
     createElement(Header, null),
-    createElement(Navigation, { route, onNavigate: setRoute }),
-    createElement('main', { className: 'site-main' }, content),
+    createElement(Navigation, { route }),
+    createElement('main', { className: 'site-main' }, renderContent(route)),
     createElement(Footer, null),
   );
 }

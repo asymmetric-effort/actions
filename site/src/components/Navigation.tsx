@@ -3,7 +3,6 @@ import type { Route } from '../App';
 
 interface NavigationProps {
   route: Route;
-  onNavigate: (route: Route) => void;
 }
 
 const links: { label: string; route: Route }[] = [
@@ -22,11 +21,6 @@ export function Navigation(props: NavigationProps): ReturnType<typeof createElem
           key: route,
           className: 'nav-link' + (props.route === route ? ' active' : ''),
           href: `#${route}`,
-          onClick: (e: Event) => {
-            e.preventDefault();
-            window.location.hash = route;
-            props.onNavigate(route);
-          },
         }, label),
       ),
     ),

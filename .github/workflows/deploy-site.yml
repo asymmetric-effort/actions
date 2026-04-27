@@ -64,3 +64,68 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+  verify:
+    name: Post-Deployment Verification
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Install dependencies
+        working-directory: site
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: site
+        run: npx playwright install chromium --with-deps
+
+      - name: Wait for CDN propagation
+        run: |
+          set -euo pipefail
+          SITE_URL="https://actions.asymmetric-effort.com"
+          echo "Waiting for ${SITE_URL} to serve fresh content..."
+          ATTEMPT=0
+          MAX_ATTEMPTS=30
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+            HTTP_CODE=$(curl -fsSL -o /dev/null -w "%{http_code}" "${SITE_URL}" 2>/dev/null || echo "000")
+            if [ "${HTTP_CODE}" = "200" ]; then
+              BODY=$(curl -fsSL "${SITE_URL}" 2>/dev/null || true)
+              if echo "${BODY}" | grep -q "Asymmetric Effort Actions"; then
+                echo "Site is live (attempt ${ATTEMPT}/${MAX_ATTEMPTS})"
+                exit 0
+              fi
+            fi
+            echo "Attempt ${ATTEMPT}/${MAX_ATTEMPTS}: HTTP ${HTTP_CODE}, retrying in 10s..."
+            sleep 10
+          done
+          echo "::error::Site did not become available within ${MAX_ATTEMPTS} attempts"
+          exit 1
+
+      - name: Run PDV tests
+        working-directory: site
+        env:
+          SITE_URL: https://actions.asymmetric-effort.com
+        run: npx playwright test --config playwright.pdv.config.ts
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pdv-report
+          path: site/pdv-report/
+          retention-days: 7
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pdv-test-results
+          path: site/test-results/
+          retention-days: 7
