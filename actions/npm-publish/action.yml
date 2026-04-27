@@ -1,0 +1,84 @@
+name: "NPM Publish"
+description: "Publish to npm using OIDC trusted publisher (no NPM_TOKEN required)"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "upload-cloud"
+  color: "red"
+
+inputs:
+  package-dir:
+    description: "Directory containing the package.json to publish"
+    required: false
+    default: "."
+  tag:
+    description: "npm dist-tag to publish under (e.g., latest, next, beta)"
+    required: false
+    default: "latest"
+  access:
+    description: "Package access level (public or restricted)"
+    required: false
+    default: "public"
+  dry-run:
+    description: "Perform a dry run without actually publishing"
+    required: false
+    default: "false"
+  registry:
+    description: "npm registry URL"
+    required: false
+    default: "https://registry.npmjs.org"
+  provenance:
+    description: "Generate and publish provenance attestation"
+    required: false
+    default: "true"
+
+outputs:
+  version:
+    description: "The published package version"
+    value: ${{ steps.publish.outputs.version }}
+  package:
+    description: "The published package name"
+    value: ${{ steps.publish.outputs.package }}
+  registry-url:
+    description: "The registry URL used for publishing"
+    value: ${{ steps.publish.outputs.registry-url }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate environment
+      id: validate
+      shell: bash
+      env:
+        INPUT_PACKAGE_DIR: ${{ inputs.package-dir }}
+        INPUT_REGISTRY: ${{ inputs.registry }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/validate.sh"
+        validate_environment
+
+    - name: Configure npm for OIDC
+      id: configure
+      shell: bash
+      env:
+        INPUT_PACKAGE_DIR: ${{ inputs.package-dir }}
+        INPUT_REGISTRY: ${{ inputs.registry }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/configure-npm.sh"
+        configure_npm_oidc
+
+    - name: Publish package
+      id: publish
+      shell: bash
+      env:
+        INPUT_PACKAGE_DIR: ${{ inputs.package-dir }}
+        INPUT_TAG: ${{ inputs.tag }}
+        INPUT_ACCESS: ${{ inputs.access }}
+        INPUT_DRY_RUN: ${{ inputs.dry-run }}
+        INPUT_PROVENANCE: ${{ inputs.provenance }}
+        INPUT_REGISTRY: ${{ inputs.registry }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/publish.sh"
+        npm_publish

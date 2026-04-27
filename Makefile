@@ -13,6 +13,7 @@ lint:
 	@shellcheck actions/go-tooling/scripts/*.sh
 	@shellcheck actions/build-pkg-rpm/scripts/*.sh
 	@shellcheck actions/build-pkg-deb/scripts/*.sh
+	@shellcheck actions/npm-publish/scripts/*.sh
 	@shellcheck tests/test-harness.sh
 	@shellcheck tests/setup-bun/*.sh
 	@shellcheck tests/gh-release/*.sh
@@ -20,6 +21,7 @@ lint:
 	@shellcheck tests/go-tooling/*.sh
 	@shellcheck tests/build-pkg-rpm/*.sh
 	@shellcheck tests/build-pkg-deb/*.sh
+	@shellcheck tests/npm-publish/*.sh
 	@shellcheck tests/run-all.sh
 	@echo "All lint checks passed."
 

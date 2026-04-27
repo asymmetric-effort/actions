@@ -51,6 +51,13 @@ const cards: CardInfo[] = [
     badge: 'Packaging',
     badgeColor: 'badge-green',
   },
+  {
+    slug: 'npm-publish',
+    name: 'NPM Publish',
+    desc: 'Publish to npm using OIDC trusted publisher. No NPM_TOKEN secret required.',
+    badge: 'Publishing',
+    badgeColor: 'badge-orange',
+  },
 ];
 
 function ActionCard(props: { card: CardInfo }): ReturnType<typeof createElement> {

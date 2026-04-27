@@ -235,6 +235,43 @@ const actions: Record<string, ActionData> = {
       { name: 'deb-name', description: 'Filename of the built .deb' },
     ],
   },
+  'npm-publish': {
+    name: 'NPM Publish',
+    description: 'Publish packages to npm using OIDC trusted publisher. No long-lived NPM_TOKEN secret required. The npm package must already exist with trusted publishing configured.',
+    badge: 'Publishing',
+    badgeColor: 'badge-orange',
+    usage: `# Basic publish (requires id-token: write permission)
+- uses: asymmetric-effort/actions/actions/npm-publish@v1
+
+# Publish with a custom tag
+- uses: asymmetric-effort/actions/actions/npm-publish@v1
+  with:
+    tag: "next"
+    access: "public"
+
+# Publish from a subdirectory
+- uses: asymmetric-effort/actions/actions/npm-publish@v1
+  with:
+    package-dir: "./packages/core"
+
+# Dry run
+- uses: asymmetric-effort/actions/actions/npm-publish@v1
+  with:
+    dry-run: "true"`,
+    inputs: [
+      { name: 'package-dir', description: 'Directory containing the package.json', required: false, default: '.' },
+      { name: 'tag', description: 'npm dist-tag (latest, next, beta, etc.)', required: false, default: 'latest' },
+      { name: 'access', description: 'Package access level (public or restricted)', required: false, default: 'public' },
+      { name: 'dry-run', description: 'Perform a dry run without publishing', required: false, default: 'false' },
+      { name: 'registry', description: 'npm registry URL', required: false, default: 'https://registry.npmjs.org' },
+      { name: 'provenance', description: 'Generate provenance attestation', required: false, default: 'true' },
+    ],
+    outputs: [
+      { name: 'version', description: 'The published package version' },
+      { name: 'package', description: 'The published package name' },
+      { name: 'registry-url', description: 'The registry URL used' },
+    ],
+  },
 };
 
 function InputsTable(props: { inputs: ActionInput[] }): ReturnType<typeof createElement> {

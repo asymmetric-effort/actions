@@ -13,6 +13,7 @@ const links: { label: string; route: Route }[] = [
   { label: 'go-tooling', route: 'go-tooling' },
   { label: 'build-pkg-rpm', route: 'build-pkg-rpm' },
   { label: 'build-pkg-deb', route: 'build-pkg-deb' },
+  { label: 'npm-publish', route: 'npm-publish' },
   { label: 'Security', route: 'security' },
 ];
 
