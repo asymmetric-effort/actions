@@ -14,6 +14,8 @@ This project provides clean-room implementations of commonly used GitHub Actions
 | [fossa-scan](./actions/fossa-scan) | Run FOSSA license compliance scanning | Active |
 | [gh-release](./actions/gh-release) | Create or update GitHub Releases with asset uploads | Active |
 | [go-tooling](./actions/go-tooling) | Install Go toolchain with govulncheck and caching | Active |
+| [build-pkg-rpm](./actions/build-pkg-rpm) | Build RPM packages from spec or inline metadata | Active |
+| [build-pkg-deb](./actions/build-pkg-deb) | Build DEB packages from control file or inline metadata | Active |
 
 ## Usage
 

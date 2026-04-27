@@ -32,6 +32,8 @@ jobs:
           shellcheck actions/setup-bun/scripts/*.sh
           shellcheck actions/gh-release/scripts/*.sh
           shellcheck actions/go-tooling/scripts/*.sh
+          shellcheck actions/build-pkg-rpm/scripts/*.sh
+          shellcheck actions/build-pkg-deb/scripts/*.sh
       - name: Lint test scripts
         run: |
           shellcheck tests/test-harness.sh
@@ -40,6 +42,8 @@ jobs:
           shellcheck tests/gh-release/*.sh
           shellcheck tests/fossa-scan/*.sh
           shellcheck tests/go-tooling/*.sh
+          shellcheck tests/build-pkg-rpm/*.sh
+          shellcheck tests/build-pkg-deb/*.sh
 
   test:
     name: Test

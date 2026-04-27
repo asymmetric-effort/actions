@@ -37,6 +37,20 @@ const cards: CardInfo[] = [
     badge: 'Toolchain',
     badgeColor: 'badge-blue',
   },
+  {
+    slug: 'build-pkg-rpm',
+    name: 'Build RPM Package',
+    desc: 'Build RPM packages from a spec file or inline metadata for RHEL/Fedora/CentOS.',
+    badge: 'Packaging',
+    badgeColor: 'badge-orange',
+  },
+  {
+    slug: 'build-pkg-deb',
+    name: 'Build DEB Package',
+    desc: 'Build Debian .deb packages from a control file or inline metadata for Ubuntu/Debian.',
+    badge: 'Packaging',
+    badgeColor: 'badge-green',
+  },
 ];
 
 function ActionCard(props: { card: CardInfo }): ReturnType<typeof createElement> {

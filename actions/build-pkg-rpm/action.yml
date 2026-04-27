@@ -1,0 +1,113 @@
+name: "Build RPM Package"
+description: "Build RPM packages from a spec file or inline metadata"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "package"
+  color: "red"
+
+inputs:
+  spec-file:
+    description: "Path to an RPM .spec file (mutually exclusive with inline metadata)"
+    required: false
+  name:
+    description: "Package name (used when no spec-file is provided)"
+    required: false
+  version:
+    description: "Package version (e.g., 1.0.0)"
+    required: false
+  release:
+    description: "Package release number"
+    required: false
+    default: "1"
+  arch:
+    description: "Target architecture (x86_64, aarch64, noarch)"
+    required: false
+    default: "x86_64"
+  summary:
+    description: "One-line package summary"
+    required: false
+  description:
+    description: "Full package description"
+    required: false
+  license:
+    description: "Package license (e.g., MIT, Apache-2.0)"
+    required: false
+    default: "MIT"
+  url:
+    description: "Project URL"
+    required: false
+  source-dir:
+    description: "Directory containing files to package"
+    required: true
+  install-prefix:
+    description: "Install prefix inside the RPM (e.g., /usr/local/bin)"
+    required: false
+    default: "/usr/local/bin"
+  output-dir:
+    description: "Directory to place the built RPM"
+    required: false
+    default: "./rpmbuild-output"
+  requires:
+    description: "Newline-delimited list of package dependencies"
+    required: false
+  scripts-pre:
+    description: "Pre-install script content"
+    required: false
+  scripts-post:
+    description: "Post-install script content"
+    required: false
+
+outputs:
+  rpm-path:
+    description: "Path to the built RPM file"
+    value: ${{ steps.build.outputs.rpm-path }}
+  rpm-name:
+    description: "Filename of the built RPM"
+    value: ${{ steps.build.outputs.rpm-name }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install rpmbuild
+      shell: bash
+      run: |
+        set -euo pipefail
+        if ! command -v rpmbuild >/dev/null 2>&1; then
+          echo "Installing rpm-build..."
+          if command -v apt-get >/dev/null 2>&1; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq rpm > /dev/null
+          elif command -v dnf >/dev/null 2>&1; then
+            sudo dnf install -y -q rpm-build
+          elif command -v yum >/dev/null 2>&1; then
+            sudo yum install -y -q rpm-build
+          else
+            echo "::error::Cannot install rpmbuild: no supported package manager found"
+            exit 1
+          fi
+        fi
+        echo "::notice::rpmbuild version: $(rpmbuild --version)"
+
+    - name: Build RPM
+      id: build
+      shell: bash
+      env:
+        INPUT_SPEC_FILE: ${{ inputs.spec-file }}
+        INPUT_NAME: ${{ inputs.name }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_RELEASE: ${{ inputs.release }}
+        INPUT_ARCH: ${{ inputs.arch }}
+        INPUT_SUMMARY: ${{ inputs.summary }}
+        INPUT_DESCRIPTION: ${{ inputs.description }}
+        INPUT_LICENSE: ${{ inputs.license }}
+        INPUT_URL: ${{ inputs.url }}
+        INPUT_SOURCE_DIR: ${{ inputs.source-dir }}
+        INPUT_INSTALL_PREFIX: ${{ inputs.install-prefix }}
+        INPUT_OUTPUT_DIR: ${{ inputs.output-dir }}
+        INPUT_REQUIRES: ${{ inputs.requires }}
+        INPUT_SCRIPTS_PRE: ${{ inputs.scripts-pre }}
+        INPUT_SCRIPTS_POST: ${{ inputs.scripts-post }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/build-rpm.sh"
+        build_rpm

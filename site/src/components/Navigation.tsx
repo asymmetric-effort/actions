@@ -11,6 +11,8 @@ const links: { label: string; route: Route }[] = [
   { label: 'fossa-scan', route: 'fossa-scan' },
   { label: 'gh-release', route: 'gh-release' },
   { label: 'go-tooling', route: 'go-tooling' },
+  { label: 'build-pkg-rpm', route: 'build-pkg-rpm' },
+  { label: 'build-pkg-deb', route: 'build-pkg-deb' },
   { label: 'Security', route: 'security' },
 ];
 

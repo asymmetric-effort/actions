@@ -158,6 +158,83 @@ const actions: Record<string, ActionData> = {
       { name: 'cache-hit', description: 'Whether the toolchain was restored from cache' },
     ],
   },
+  'build-pkg-rpm': {
+    name: 'Build RPM Package',
+    description: 'Build RPM packages for Red Hat, CentOS, Fedora, and other RPM-based Linux distributions. Generate a spec file from inline inputs or provide your own.',
+    badge: 'Packaging',
+    badgeColor: 'badge-orange',
+    usage: `# Inline metadata
+- uses: asymmetric-effort/actions/actions/build-pkg-rpm@v1
+  with:
+    name: "myapp"
+    version: "1.0.0"
+    summary: "My Application"
+    source-dir: "./build/output"
+
+# From a spec file
+- uses: asymmetric-effort/actions/actions/build-pkg-rpm@v1
+  with:
+    spec-file: "./packaging/myapp.spec"
+    source-dir: "./build/output"`,
+    inputs: [
+      { name: 'spec-file', description: 'Path to an RPM .spec file', required: false },
+      { name: 'name', description: 'Package name (required without spec-file)', required: false },
+      { name: 'version', description: 'Package version', required: false },
+      { name: 'release', description: 'Package release number', required: false, default: '1' },
+      { name: 'arch', description: 'Target architecture', required: false, default: 'x86_64' },
+      { name: 'summary', description: 'One-line package summary', required: false },
+      { name: 'license', description: 'Package license', required: false, default: 'MIT' },
+      { name: 'source-dir', description: 'Directory containing files to package', required: true },
+      { name: 'install-prefix', description: 'Install prefix inside the RPM', required: false, default: '/usr/local/bin' },
+      { name: 'output-dir', description: 'Directory for built RPM output', required: false, default: './rpmbuild-output' },
+      { name: 'requires', description: 'Newline-delimited package dependencies', required: false },
+      { name: 'scripts-pre', description: 'Pre-install script content', required: false },
+      { name: 'scripts-post', description: 'Post-install script content', required: false },
+    ],
+    outputs: [
+      { name: 'rpm-path', description: 'Path to the built RPM file' },
+      { name: 'rpm-name', description: 'Filename of the built RPM' },
+    ],
+  },
+  'build-pkg-deb': {
+    name: 'Build DEB Package',
+    description: 'Build Debian .deb packages for Ubuntu, Debian, and other dpkg-based distributions. Generate a control file from inline inputs or provide your own.',
+    badge: 'Packaging',
+    badgeColor: 'badge-green',
+    usage: `# Inline metadata
+- uses: asymmetric-effort/actions/actions/build-pkg-deb@v1
+  with:
+    name: "myapp"
+    version: "1.0.0"
+    maintainer: "Team <team@example.com>"
+    source-dir: "./build/output"
+
+# From a control file
+- uses: asymmetric-effort/actions/actions/build-pkg-deb@v1
+  with:
+    control-file: "./debian/control"
+    source-dir: "./build/output"`,
+    inputs: [
+      { name: 'control-file', description: 'Path to a debian/control file', required: false },
+      { name: 'name', description: 'Package name (required without control-file)', required: false },
+      { name: 'version', description: 'Package version', required: false },
+      { name: 'arch', description: 'Target architecture (amd64, arm64, all)', required: false, default: 'amd64' },
+      { name: 'maintainer', description: 'Package maintainer (Name <email>)', required: false },
+      { name: 'summary', description: 'Short package description', required: false },
+      { name: 'section', description: 'Package section', required: false, default: 'utils' },
+      { name: 'priority', description: 'Package priority', required: false, default: 'optional' },
+      { name: 'source-dir', description: 'Directory containing files to package', required: true },
+      { name: 'install-prefix', description: 'Install prefix inside the package', required: false, default: '/usr/local/bin' },
+      { name: 'output-dir', description: 'Directory for built .deb output', required: false, default: './debbuild-output' },
+      { name: 'depends', description: 'Comma-separated package dependencies', required: false },
+      { name: 'scripts-preinst', description: 'Pre-install script content', required: false },
+      { name: 'scripts-postinst', description: 'Post-install script content', required: false },
+    ],
+    outputs: [
+      { name: 'deb-path', description: 'Path to the built .deb file' },
+      { name: 'deb-name', description: 'Filename of the built .deb' },
+    ],
+  },
 };
 
 function InputsTable(props: { inputs: ActionInput[] }): ReturnType<typeof createElement> {

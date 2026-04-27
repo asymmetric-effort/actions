@@ -11,11 +11,15 @@ lint:
 	@shellcheck actions/setup-bun/scripts/*.sh
 	@shellcheck actions/gh-release/scripts/*.sh
 	@shellcheck actions/go-tooling/scripts/*.sh
+	@shellcheck actions/build-pkg-rpm/scripts/*.sh
+	@shellcheck actions/build-pkg-deb/scripts/*.sh
 	@shellcheck tests/test-harness.sh
 	@shellcheck tests/setup-bun/*.sh
 	@shellcheck tests/gh-release/*.sh
 	@shellcheck tests/fossa-scan/*.sh
 	@shellcheck tests/go-tooling/*.sh
+	@shellcheck tests/build-pkg-rpm/*.sh
+	@shellcheck tests/build-pkg-deb/*.sh
 	@shellcheck tests/run-all.sh
 	@echo "All lint checks passed."
 

@@ -1,0 +1,108 @@
+name: "Build DEB Package"
+description: "Build Debian .deb packages from a control file or inline metadata"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "package"
+  color: "purple"
+
+inputs:
+  control-file:
+    description: "Path to a debian/control file (mutually exclusive with inline metadata)"
+    required: false
+  name:
+    description: "Package name (used when no control-file is provided)"
+    required: false
+  version:
+    description: "Package version (e.g., 1.0.0)"
+    required: false
+  arch:
+    description: "Target architecture (amd64, arm64, all)"
+    required: false
+    default: "amd64"
+  maintainer:
+    description: "Package maintainer (e.g., 'Name <email>')"
+    required: false
+  summary:
+    description: "Short package description"
+    required: false
+  description:
+    description: "Full package description"
+    required: false
+  section:
+    description: "Package section (e.g., utils, devel, admin)"
+    required: false
+    default: "utils"
+  priority:
+    description: "Package priority (required, important, standard, optional, extra)"
+    required: false
+    default: "optional"
+  homepage:
+    description: "Project homepage URL"
+    required: false
+  source-dir:
+    description: "Directory containing files to package"
+    required: true
+  install-prefix:
+    description: "Install prefix inside the package (e.g., /usr/local/bin)"
+    required: false
+    default: "/usr/local/bin"
+  output-dir:
+    description: "Directory to place the built .deb"
+    required: false
+    default: "./debbuild-output"
+  depends:
+    description: "Comma-separated list of package dependencies"
+    required: false
+  scripts-preinst:
+    description: "Pre-install script content"
+    required: false
+  scripts-postinst:
+    description: "Post-install script content"
+    required: false
+
+outputs:
+  deb-path:
+    description: "Path to the built .deb file"
+    value: ${{ steps.build.outputs.deb-path }}
+  deb-name:
+    description: "Filename of the built .deb"
+    value: ${{ steps.build.outputs.deb-name }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Verify dpkg-deb
+      shell: bash
+      run: |
+        set -euo pipefail
+        if ! command -v dpkg-deb >/dev/null 2>&1; then
+          echo "::error::dpkg-deb not found. This action requires a Debian-based runner."
+          exit 1
+        fi
+        echo "::notice::dpkg-deb version: $(dpkg-deb --version | head -1)"
+
+    - name: Build DEB
+      id: build
+      shell: bash
+      env:
+        INPUT_CONTROL_FILE: ${{ inputs.control-file }}
+        INPUT_NAME: ${{ inputs.name }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_ARCH: ${{ inputs.arch }}
+        INPUT_MAINTAINER: ${{ inputs.maintainer }}
+        INPUT_SUMMARY: ${{ inputs.summary }}
+        INPUT_DESCRIPTION: ${{ inputs.description }}
+        INPUT_SECTION: ${{ inputs.section }}
+        INPUT_PRIORITY: ${{ inputs.priority }}
+        INPUT_HOMEPAGE: ${{ inputs.homepage }}
+        INPUT_SOURCE_DIR: ${{ inputs.source-dir }}
+        INPUT_INSTALL_PREFIX: ${{ inputs.install-prefix }}
+        INPUT_OUTPUT_DIR: ${{ inputs.output-dir }}
+        INPUT_DEPENDS: ${{ inputs.depends }}
+        INPUT_SCRIPTS_PREINST: ${{ inputs.scripts-preinst }}
+        INPUT_SCRIPTS_POSTINST: ${{ inputs.scripts-postinst }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/build-deb.sh"
+        build_deb
