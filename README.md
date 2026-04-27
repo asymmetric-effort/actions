@@ -13,6 +13,7 @@ This project provides clean-room implementations of commonly used GitHub Actions
 | [setup-bun](./actions/setup-bun) | Install and configure the Bun runtime | Active |
 | [fossa-scan](./actions/fossa-scan) | Run FOSSA license compliance scanning | Active |
 | [gh-release](./actions/gh-release) | Create or update GitHub Releases with asset uploads | Active |
+| [go-tooling](./actions/go-tooling) | Install Go toolchain with govulncheck and caching | Active |
 
 ## Usage
 

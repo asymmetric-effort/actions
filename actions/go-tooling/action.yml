@@ -1,0 +1,123 @@
+name: "Go Tooling"
+description: "Install and configure the Go toolchain with govulncheck and caching"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "package"
+  color: "blue"
+
+inputs:
+  go-version:
+    description: "Go version to install (e.g., 1.26.2, 'latest', or 'stable')"
+    required: false
+    default: "1.26.2"
+  go-version-file:
+    description: "File to read Go version from (e.g., go.mod, .go-version)"
+    required: false
+  govulncheck-version:
+    description: "govulncheck version to install (e.g., latest, v1.1.4)"
+    required: false
+    default: "latest"
+  no-cache:
+    description: "Disable caching of Go toolchain and modules"
+    required: false
+    default: "false"
+  token:
+    description: "GitHub token for API requests (avoids rate limits)"
+    required: false
+    default: ${{ github.token }}
+  cache-key-suffix:
+    description: "Optional suffix appended to cache keys for isolation"
+    required: false
+
+outputs:
+  go-version:
+    description: "The installed Go version"
+    value: ${{ steps.install.outputs.go-version }}
+  go-path:
+    description: "GOPATH value"
+    value: ${{ steps.install.outputs.go-path }}
+  govulncheck-version:
+    description: "The installed govulncheck version"
+    value: ${{ steps.tools.outputs.govulncheck-version }}
+  cache-hit:
+    description: "Whether the Go toolchain was restored from cache"
+    value: ${{ steps.cache-restore.outputs.cache-hit || 'false' }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Resolve Go version
+      id: resolve
+      shell: bash
+      env:
+        INPUT_GO_VERSION: ${{ inputs.go-version }}
+        INPUT_GO_VERSION_FILE: ${{ inputs.go-version-file }}
+        INPUT_TOKEN: ${{ inputs.token }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/resolve-version.sh"
+        resolve_go_version
+
+    - name: Compute cache key
+      id: cache-key
+      shell: bash
+      run: |
+        set -euo pipefail
+        GOSUM_HASH="none"
+        if [[ -f "go.sum" ]]; then
+          GOSUM_HASH="$(sha256sum go.sum | cut -d' ' -f1)"
+        fi
+        SUFFIX="${{ inputs.cache-key-suffix }}"
+        KEY="go-tooling-${{ runner.os }}-${{ runner.arch }}-${{ steps.resolve.outputs.go-version }}-${GOSUM_HASH}"
+        if [[ -n "${SUFFIX}" ]]; then
+          KEY="${KEY}-${SUFFIX}"
+        fi
+        echo "cache-key=${KEY}" >> "${GITHUB_OUTPUT}"
+        echo "::notice::Cache key: ${KEY}"
+
+    - name: Restore cache
+      id: cache-restore
+      if: inputs.no-cache != 'true'
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          ~/go
+          ~/sdk
+          ~/.cache/go-build
+        key: ${{ steps.cache-key.outputs.cache-key }}
+        restore-keys: |
+          go-tooling-${{ runner.os }}-${{ runner.arch }}-${{ steps.resolve.outputs.go-version }}-
+
+    - name: Install Go
+      id: install
+      shell: bash
+      env:
+        RESOLVED_VERSION: ${{ steps.resolve.outputs.go-version }}
+        DOWNLOAD_URL: ${{ steps.resolve.outputs.download-url }}
+        CACHE_HIT: ${{ steps.cache-restore.outputs.cache-hit || 'false' }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/install-go.sh"
+        install_go
+
+    - name: Install Go tools
+      id: tools
+      shell: bash
+      env:
+        GOVULNCHECK_VERSION: ${{ inputs.govulncheck-version }}
+        CACHE_HIT: ${{ steps.cache-restore.outputs.cache-hit || 'false' }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/install-tools.sh"
+        install_go_tools
+
+    - name: Save cache
+      if: inputs.no-cache != 'true' && steps.cache-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          ~/go
+          ~/sdk
+          ~/.cache/go-build
+        key: ${{ steps.cache-key.outputs.cache-key }}

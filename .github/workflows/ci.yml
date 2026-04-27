@@ -31,6 +31,7 @@ jobs:
         run: |
           shellcheck actions/setup-bun/scripts/*.sh
           shellcheck actions/gh-release/scripts/*.sh
+          shellcheck actions/go-tooling/scripts/*.sh
       - name: Lint test scripts
         run: |
           shellcheck tests/test-harness.sh
@@ -38,6 +39,7 @@ jobs:
           shellcheck tests/setup-bun/*.sh
           shellcheck tests/gh-release/*.sh
           shellcheck tests/fossa-scan/*.sh
+          shellcheck tests/go-tooling/*.sh
 
   test:
     name: Test

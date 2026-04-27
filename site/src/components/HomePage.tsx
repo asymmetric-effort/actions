@@ -30,6 +30,13 @@ const cards: CardInfo[] = [
     badge: 'Release',
     badgeColor: 'badge-green',
   },
+  {
+    slug: 'go-tooling',
+    name: 'Go Tooling',
+    desc: 'Install the complete Go toolchain with govulncheck and intelligent caching.',
+    badge: 'Toolchain',
+    badgeColor: 'badge-blue',
+  },
 ];
 
 function ActionCard(props: { card: CardInfo }): ReturnType<typeof createElement> {

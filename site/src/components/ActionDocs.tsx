@@ -123,6 +123,41 @@ const actions: Record<string, ActionData> = {
       { name: 'assets', description: 'JSON array of uploaded asset metadata' },
     ],
   },
+  'go-tooling': {
+    name: 'Go Tooling',
+    description: 'Install and configure the complete Go toolchain with govulncheck and intelligent caching. Supports version pinning, go.mod resolution, and caches the Go SDK, module cache, and build cache for fast CI runs.',
+    badge: 'Toolchain',
+    badgeColor: 'badge-blue',
+    usage: `# Default: Go 1.26.2 + govulncheck
+- uses: asymmetric-effort/actions/actions/go-tooling@v1
+
+# Read version from go.mod
+- uses: asymmetric-effort/actions/actions/go-tooling@v1
+  with:
+    go-version-file: "go.mod"
+
+# Full workflow
+- uses: asymmetric-effort/actions/actions/go-tooling@v1
+  with:
+    go-version: "1.26.2"
+- run: go build ./...
+- run: go test ./...
+- run: govulncheck ./...`,
+    inputs: [
+      { name: 'go-version', description: 'Go version to install (e.g., 1.26.2, latest, stable)', required: false, default: '1.26.2' },
+      { name: 'go-version-file', description: 'File to read Go version from (e.g., go.mod, .go-version)', required: false },
+      { name: 'govulncheck-version', description: 'govulncheck version to install', required: false, default: 'latest' },
+      { name: 'no-cache', description: 'Disable caching of Go toolchain and modules', required: false, default: 'false' },
+      { name: 'token', description: 'GitHub token for API requests', required: false, default: '${{ github.token }}' },
+      { name: 'cache-key-suffix', description: 'Optional suffix for cache key isolation', required: false },
+    ],
+    outputs: [
+      { name: 'go-version', description: 'The installed Go version' },
+      { name: 'go-path', description: 'GOPATH value' },
+      { name: 'govulncheck-version', description: 'The installed govulncheck version' },
+      { name: 'cache-hit', description: 'Whether the toolchain was restored from cache' },
+    ],
+  },
 };
 
 function InputsTable(props: { inputs: ActionInput[] }): ReturnType<typeof createElement> {

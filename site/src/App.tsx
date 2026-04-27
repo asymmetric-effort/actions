@@ -7,11 +7,11 @@ import { ActionDocs } from './components/ActionDocs';
 import { SecurityPage } from './components/SecurityPage';
 import { Footer } from './components/Footer';
 
-export type Route = 'home' | 'setup-bun' | 'fossa-scan' | 'gh-release' | 'security';
+export type Route = 'home' | 'setup-bun' | 'fossa-scan' | 'gh-release' | 'go-tooling' | 'security';
 
 function getRoute(): Route {
   const hash = window.location.hash.replace('#', '') || 'home';
-  const valid: Route[] = ['home', 'setup-bun', 'fossa-scan', 'gh-release', 'security'];
+  const valid: Route[] = ['home', 'setup-bun', 'fossa-scan', 'gh-release', 'go-tooling', 'security'];
   return valid.includes(hash as Route) ? (hash as Route) : 'home';
 }
 
@@ -20,6 +20,7 @@ function renderContent(route: Route): ReturnType<typeof createElement> {
     case 'setup-bun':
     case 'fossa-scan':
     case 'gh-release':
+    case 'go-tooling':
       return createElement(ActionDocs, { slug: route });
     case 'security':
       return createElement(SecurityPage, null);

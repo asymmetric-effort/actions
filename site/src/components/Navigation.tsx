@@ -10,6 +10,7 @@ const links: { label: string; route: Route }[] = [
   { label: 'setup-bun', route: 'setup-bun' },
   { label: 'fossa-scan', route: 'fossa-scan' },
   { label: 'gh-release', route: 'gh-release' },
+  { label: 'go-tooling', route: 'go-tooling' },
   { label: 'Security', route: 'security' },
 ];
 
