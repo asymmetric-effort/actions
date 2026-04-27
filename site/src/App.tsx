@@ -39,8 +39,10 @@ function renderApp(): void {
 
   const tree = createElement('div', { className: 'site-wrapper' },
     createElement(Header, null),
-    createElement(Navigation, { route }),
-    createElement('main', { className: 'site-main' }, renderContent(route)),
+    createElement('div', { className: 'site-body' },
+      createElement(Navigation, { route }),
+      createElement('main', { className: 'site-main' }, renderContent(route)),
+    ),
     createElement(Footer, null),
   );
 
@@ -63,8 +65,10 @@ export function App(): ReturnType<typeof createElement> {
 
   return createElement('div', { className: 'site-wrapper' },
     createElement(Header, null),
-    createElement(Navigation, { route }),
-    createElement('main', { className: 'site-main' }, renderContent(route)),
+    createElement('div', { className: 'site-body' },
+      createElement(Navigation, { route }),
+      createElement('main', { className: 'site-main' }, renderContent(route)),
+    ),
     createElement(Footer, null),
   );
 }

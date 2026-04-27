@@ -30,9 +30,10 @@ test.describe('Home page', () => {
     await expect(btn).toHaveAttribute('href', /github\.com\/asymmetric-effort\/actions/);
   });
 
-  test('renders three action cards', async ({ page }) => {
+  test('renders action cards for all actions', async ({ page }) => {
     const cards = page.locator('.action-card');
-    await expect(cards).toHaveCount(3);
+    const count = await cards.count();
+    expect(count).toBeGreaterThanOrEqual(7);
   });
 
   test('action cards have correct names', async ({ page }) => {
@@ -40,6 +41,10 @@ test.describe('Home page', () => {
     expect(cardTexts).toContain('Setup Bun');
     expect(cardTexts).toContain('FOSSA Scan');
     expect(cardTexts).toContain('GitHub Release');
+    expect(cardTexts).toContain('Go Tooling');
+    expect(cardTexts).toContain('Build RPM Package');
+    expect(cardTexts).toContain('Build DEB Package');
+    expect(cardTexts).toContain('NPM Publish');
   });
 
   test('action cards have category badges', async ({ page }) => {
@@ -47,6 +52,9 @@ test.describe('Home page', () => {
     expect(badges).toContain('Runtime');
     expect(badges).toContain('Security');
     expect(badges).toContain('Release');
+    expect(badges).toContain('Toolchain');
+    expect(badges).toContain('Packaging');
+    expect(badges).toContain('Publishing');
   });
 
   test('clicking an action card navigates to its docs', async ({ page }) => {

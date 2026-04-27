@@ -8,10 +8,19 @@ test.describe('Navigation', () => {
 
   test('renders all navigation links', async ({ page }) => {
     const navLinks = page.locator('.nav-link');
-    await expect(navLinks).toHaveCount(5);
+    const count = await navLinks.count();
+    expect(count).toBeGreaterThanOrEqual(9);
 
     const labels = await navLinks.allTextContents();
-    expect(labels).toEqual(['Home', 'setup-bun', 'fossa-scan', 'gh-release', 'Security']);
+    expect(labels).toContain('Home');
+    expect(labels).toContain('setup-bun');
+    expect(labels).toContain('fossa-scan');
+    expect(labels).toContain('gh-release');
+    expect(labels).toContain('go-tooling');
+    expect(labels).toContain('build-pkg-rpm');
+    expect(labels).toContain('build-pkg-deb');
+    expect(labels).toContain('npm-publish');
+    expect(labels).toContain('Security');
   });
 
   test('Home link is active by default', async ({ page }) => {

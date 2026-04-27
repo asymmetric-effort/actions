@@ -12,6 +12,7 @@ export function Footer(): ReturnType<typeof createElement> {
         createElement('a', { href: 'https://asymmetric-effort.com', target: '_blank', rel: 'noopener' }, 'Asymmetric Effort'),
       ),
       createElement('div', null, `\u00A9 ${year} Asymmetric Effort, LLC. All rights reserved.`),
+      createElement('div', { className: 'footer-version' }, `v${__APP_VERSION__}`),
     ),
   );
 }

@@ -68,4 +68,11 @@ test.describe('Footer', () => {
     const count = await links.count();
     expect(count).toBeGreaterThanOrEqual(4);
   });
+
+  test('renders project version', async ({ page }) => {
+    const version = page.locator('.footer-version');
+    await expect(version).toBeVisible();
+    const text = await version.textContent();
+    expect(text).toMatch(/^v\d+\.\d+\.\d+$/);
+  });
 });

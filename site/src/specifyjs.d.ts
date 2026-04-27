@@ -45,6 +45,8 @@ declare module '@asymmetric-effort/specifyjs/dom' {
   export function render(element: SpecNode, container: Element, callback?: () => void): void;
 }
 
+declare const __APP_VERSION__: string;
+
 declare module '@asymmetric-effort/specifyjs/jsx-runtime' {
   export function jsx(type: unknown, props: Record<string, unknown>, key?: string | number): unknown;
   export function jsxs(type: unknown, props: Record<string, unknown>, key?: string | number): unknown;
