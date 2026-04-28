@@ -60,6 +60,30 @@ const cards: CardInfo[] = [
   },
 ];
 
+interface BenefitInfo {
+  title: string;
+  desc: string;
+}
+
+const benefits: BenefitInfo[] = [
+  {
+    title: 'Secure Supply Chain',
+    desc: 'Every action is a clean-room implementation with zero third-party npm, pip, or Go dependencies. The only external references are official GitHub actions (actions/cache, actions/checkout). Fewer dependencies mean fewer attack vectors.',
+  },
+  {
+    title: 'Intelligent Caching',
+    desc: 'Actions like go-tooling and setup-bun cache toolchains, module downloads, and build artifacts across CI runs. Cache keys are scoped by OS, architecture, version, and dependency hash \u2014 so builds are fast and cache invalidation is precise.',
+  },
+  {
+    title: 'Minimal and Focused',
+    desc: 'Each action does one thing well. Pure bash composite actions with no build step, no transpilation, no bundled node_modules. The source code is the artifact \u2014 what you audit is what runs.',
+  },
+  {
+    title: 'Reusable Across Repositories',
+    desc: 'Reference any action from any repository in your organization. Caches are scoped per-repo automatically. Pin to a version tag or commit SHA for reproducible builds.',
+  },
+];
+
 function ActionCard(props: { card: CardInfo }): ReturnType<typeof createElement> {
   const { card } = props;
   return createElement('a', {
@@ -76,6 +100,23 @@ function ActionCard(props: { card: CardInfo }): ReturnType<typeof createElement>
   );
 }
 
+function WhyCard(): ReturnType<typeof createElement> {
+  return createElement('div', { className: 'why-card' },
+    createElement('h2', { className: 'why-card-title' }, 'Why self-contained actions?'),
+    createElement('p', { className: 'why-card-intro' },
+      'Third-party GitHub Actions are a supply chain risk. A compromised upstream action can exfiltrate secrets, inject code, or tamper with artifacts \u2014 and you may never know. These actions eliminate that risk entirely.',
+    ),
+    createElement('div', { className: 'why-card-grid' },
+      ...benefits.map((b, i) =>
+        createElement('div', { key: `b-${i}`, className: 'why-benefit' },
+          createElement('h3', null, b.title),
+          createElement('p', null, b.desc),
+        ),
+      ),
+    ),
+  );
+}
+
 export function HomePage(): ReturnType<typeof createElement> {
   return createElement('div', null,
     createElement('div', { className: 'hero' },
@@ -86,6 +127,7 @@ export function HomePage(): ReturnType<typeof createElement> {
         createElement('a', { href: 'https://github.com/asymmetric-effort/actions', target: '_blank', rel: 'noopener', className: 'hero-btn hero-btn-secondary' }, 'View on GitHub'),
       ),
     ),
+    createElement(WhyCard, null),
     createElement('div', { style: 'display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:32px;' },
       ...cards.map((card) =>
         createElement(ActionCard, { key: card.slug, card }),

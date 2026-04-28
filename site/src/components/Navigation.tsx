@@ -18,7 +18,7 @@ const sections: NavSection[] = [
     ],
   },
   {
-    heading: 'Actions',
+    heading: '',
     links: [
       { label: 'setup-bun', route: 'setup-bun' },
       { label: 'fossa-scan', route: 'fossa-scan' },

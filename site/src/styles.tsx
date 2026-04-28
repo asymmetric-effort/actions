@@ -454,6 +454,47 @@ export function injectStyles(): void {
       text-decoration: none;
     }
 
+    /* Why card */
+    .why-card {
+      background: var(--color-bg-alt);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 32px;
+      margin-top: 32px;
+    }
+
+    .why-card-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .why-card-intro {
+      color: var(--color-text-muted);
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .why-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+    }
+
+    .why-benefit h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0 0 6px;
+    }
+
+    .why-benefit p {
+      font-size: 14px;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+      margin: 0;
+    }
+
     /* Card links */
     .action-card-link {
       display: block;
