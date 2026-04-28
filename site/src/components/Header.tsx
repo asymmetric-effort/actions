@@ -1,6 +1,6 @@
 import { createElement } from '@asymmetric-effort/specifyjs';
 
-const LOGO_SVG = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="18" fill="#0969da"/><text x="50" y="50" text-anchor="middle" dominant-baseline="central" font-family="serif" font-size="72" font-weight="bold" fill="white">\u0394</text></svg>')}`;
+const LOGO_SVG = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="18" fill="#0969da"/><text x="50" y="50" text-anchor="middle" dominant-baseline="central" font-family="serif" font-size="48" font-weight="bold" fill="white">\u0394\u210F</text></svg>')}`;
 
 export function Header(): ReturnType<typeof createElement> {
   return createElement('header', { className: 'site-header' },

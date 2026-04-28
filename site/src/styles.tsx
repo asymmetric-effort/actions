@@ -13,10 +13,34 @@ export function injectStyles(): void {
       --color-border-light: #e8ecf0;
       --color-success: #1a7f37;
       --color-warning: #9a6700;
+      --color-header-bg: #212529;
+      --color-header-text: #ffffff;
+      --color-security-bg: #fff8c5;
+      --color-security-border: #d4a72c;
       --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
       --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
       --max-width: 960px;
       --radius: 6px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-bg: #0d1117;
+        --color-bg-alt: #161b22;
+        --color-bg-code: #1c2128;
+        --color-text: #e6edf3;
+        --color-text-muted: #8b949e;
+        --color-primary: #58a6ff;
+        --color-primary-dark: #79c0ff;
+        --color-border: #30363d;
+        --color-border-light: #21262d;
+        --color-success: #3fb950;
+        --color-warning: #d29922;
+        --color-header-bg: #010409;
+        --color-header-text: #e6edf3;
+        --color-security-bg: #2d1f00;
+        --color-security-border: #9e6a03;
+      }
     }
 
     *, *::before, *::after {
@@ -48,8 +72,8 @@ export function injectStyles(): void {
 
     /* Header */
     .site-header {
-      background: var(--color-text);
-      color: #fff;
+      background: var(--color-header-bg);
+      color: var(--color-header-text);
       padding: 0;
       position: sticky;
       top: 0;
@@ -71,7 +95,7 @@ export function injectStyles(): void {
       align-items: center;
       gap: 10px;
       text-decoration: none;
-      color: #fff;
+      color: var(--color-header-text);
     }
 
     .header-brand:hover {
@@ -86,7 +110,7 @@ export function injectStyles(): void {
     .header-title {
       font-size: 20px;
       font-weight: 600;
-      color: #fff;
+      color: var(--color-header-text);
     }
 
     .header-links a {
@@ -96,7 +120,7 @@ export function injectStyles(): void {
     }
 
     .header-links a:hover {
-      color: #fff;
+      color: var(--color-header-text);
       text-decoration: none;
     }
 
@@ -143,14 +167,14 @@ export function injectStyles(): void {
 
     .nav-link:hover {
       color: var(--color-text);
-      background: rgba(0,0,0,0.03);
+      background: var(--color-bg-code);
       text-decoration: none;
     }
 
     .nav-link.active {
       color: var(--color-primary);
       border-left-color: var(--color-primary);
-      background: rgba(9,105,218,0.04);
+      background: var(--color-bg-code);
     }
 
     /* Main Content */
@@ -207,7 +231,7 @@ export function injectStyles(): void {
       border-radius: 12px;
       font-size: 12px;
       font-weight: 500;
-      color: #fff;
+      color: #ffffff;
     }
 
     .badge-green { background: var(--color-success); }
@@ -256,7 +280,7 @@ export function injectStyles(): void {
     }
 
     .param-required {
-      color: #cf222e;
+      color: #f85149;
       font-size: 12px;
       font-weight: 600;
     }
@@ -317,8 +341,8 @@ export function injectStyles(): void {
 
     /* Security section */
     .security-note {
-      background: #fff8c5;
-      border: 1px solid #d4a72c;
+      background: var(--color-security-bg);
+      border: 1px solid var(--color-security-border);
       border-radius: var(--radius);
       padding: 16px 20px;
       margin: 16px 0;
@@ -410,12 +434,13 @@ export function injectStyles(): void {
 
     .hero-btn-primary {
       background: var(--color-primary);
-      color: #fff;
+      color: #ffffff;
     }
 
     .hero-btn-primary:hover {
       background: var(--color-primary-dark);
       text-decoration: none;
+      color: #ffffff;
     }
 
     .hero-btn-secondary {
