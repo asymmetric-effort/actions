@@ -361,21 +361,7 @@ export function injectStyles(): void {
       margin-bottom: 4px;
     }
 
-    /* Footer */
-    .site-footer {
-      background: var(--color-bg-alt);
-      border-top: 1px solid var(--color-border);
-      padding: 24px;
-      text-align: center;
-      font-size: 14px;
-      color: var(--color-text-muted);
-    }
-
-    .footer-inner {
-      max-width: var(--max-width);
-      margin: 0 auto;
-    }
-
+    /* Footer (content inside SpecifyJS Footer component) */
     .footer-links {
       margin-bottom: 8px;
     }

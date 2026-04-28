@@ -45,6 +45,26 @@ declare module '@asymmetric-effort/specifyjs/dom' {
   export function render(element: SpecNode, container: Element, callback?: () => void): void;
 }
 
+declare module '@asymmetric-effort/specifyjs/components' {
+  import type { SpecElement, Props } from '@asymmetric-effort/specifyjs';
+
+  export interface FooterProps {
+    left?: unknown;
+    center?: unknown;
+    right?: unknown;
+    borderTop?: string;
+    background?: string;
+    color?: string;
+    fontSize?: string;
+    padding?: string;
+    maxWidth?: string;
+    className?: string;
+    ariaLabel?: string;
+  }
+
+  export function Footer(props: FooterProps): SpecElement<Props>;
+}
+
 declare const __APP_VERSION__: string;
 
 declare module '@asymmetric-effort/specifyjs/jsx-runtime' {
