@@ -76,16 +76,31 @@ output="$(cat "${GITHUB_OUTPUT}")"
 assert_contains "${output}" "govulncheck-version=" "install_go_tools sets govulncheck output"
 
 # ============================================================
-test_suite "install_govulncheck (version prefix handling)"
+test_suite "install_govulncheck (version mismatch triggers install)"
 # ============================================================
 
-# Test that version without 'v' prefix gets 'v' added
-# (We can't actually run go install in tests, but we can test the logic branches)
-# The function should try to install when version doesn't match
-# Since we have a fake govulncheck with v1.1.4, asking for v1.2.0 should attempt install
-assert_failure "attempts install for different version" bash -c "
+# When installed version (v1.1.4) doesn't match requested (v1.2.0),
+# the function should NOT skip — it should attempt go install.
+# We verify by checking that the "already installed (from cache)" message is NOT emitted.
+true > "${GITHUB_OUTPUT}"
+
+# Create a subshell with a fake 'go' that fails, so we can detect the attempt
+assert_failure "attempts go install for mismatched version" bash -c "
   export GITHUB_OUTPUT='${GITHUB_OUTPUT}'
-  export PATH='${tmp_dir}:${PATH}'
+  fake_dir=\$(mktemp -d)
+  # Fake govulncheck that reports v1.1.4
+  cat > \"\${fake_dir}/govulncheck\" << 'GOVULN'
+#!/usr/bin/env bash
+if [[ \"\${1:-}\" == \"-version\" ]]; then echo 'govulncheck v1.1.4'; fi
+GOVULN
+  chmod +x \"\${fake_dir}/govulncheck\"
+  # Fake go that always fails (simulates go not being configured)
+  cat > \"\${fake_dir}/go\" << 'GOFAKE'
+#!/usr/bin/env bash
+exit 1
+GOFAKE
+  chmod +x \"\${fake_dir}/go\"
+  export PATH=\"\${fake_dir}:/usr/bin:/bin\"
   source '${ACTION_DIR}/scripts/install-tools.sh'
   install_govulncheck 'v1.2.0'
 "

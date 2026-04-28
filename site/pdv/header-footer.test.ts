@@ -36,11 +36,11 @@ test.describe('Header', () => {
 test.describe('Footer', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.site-footer');
+    await page.waitForSelector('footer');
   });
 
   test('renders footer with copyright', async ({ page }) => {
-    const footer = page.locator('.site-footer');
+    const footer = page.locator('footer');
     await expect(footer).toBeVisible();
     await expect(footer).toContainText('Asymmetric Effort, LLC');
     await expect(footer).toContainText(new Date().getFullYear().toString());
