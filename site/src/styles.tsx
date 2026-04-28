@@ -66,6 +66,23 @@ export function injectStyles(): void {
       justify-content: space-between;
     }
 
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .header-brand:hover {
+      text-decoration: none;
+    }
+
+    .header-logo {
+      width: 30px;
+      height: 30px;
+    }
+
     .header-title {
       font-size: 20px;
       font-weight: 600;
