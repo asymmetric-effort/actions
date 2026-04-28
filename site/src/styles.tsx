@@ -361,26 +361,7 @@ export function injectStyles(): void {
       margin-bottom: 4px;
     }
 
-    /* Footer (content inside SpecifyJS Footer component) */
-    .footer-links {
-      margin-bottom: 8px;
-    }
-
-    .footer-links a {
-      margin: 0 12px;
-      color: var(--color-text-muted);
-    }
-
-    .footer-links a:hover {
-      color: var(--color-primary);
-    }
-
-    .footer-version {
-      margin-top: 8px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--color-border);
-    }
+    /* Footer — uses SpecifyJS Footer component, no custom styles needed */
 
     /* Hero section */
     .hero {

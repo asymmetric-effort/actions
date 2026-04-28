@@ -39,40 +39,35 @@ test.describe('Footer', () => {
     await page.waitForSelector('footer');
   });
 
-  test('renders footer with copyright', async ({ page }) => {
+  test('has aria-label for accessibility', async ({ page }) => {
     const footer = page.locator('footer');
-    await expect(footer).toBeVisible();
-    await expect(footer).toContainText('Asymmetric Effort, LLC');
-    await expect(footer).toContainText(new Date().getFullYear().toString());
+    await expect(footer).toHaveAttribute('aria-label', 'Site footer');
   });
 
-  test('renders GitHub Repository link', async ({ page }) => {
-    const link = page.locator('.footer-links a', { hasText: 'GitHub Repository' });
+  test('left section shows project name and version', async ({ page }) => {
+    const footer = page.locator('footer');
+    const text = await footer.innerText();
+    expect(text).toMatch(/Actions v\d+\.\d+\.\d+/);
+  });
+
+  test('center section shows copyright with Asymmetric Effort link', async ({ page }) => {
+    const footer = page.locator('footer');
+    await expect(footer).toContainText('Asymmetric Effort, LLC');
+    await expect(footer).toContainText('MIT License');
+
+    const orgLink = page.locator('footer a', { hasText: 'Asymmetric Effort, LLC' });
+    await expect(orgLink).toBeVisible();
+    await expect(orgLink).toHaveAttribute('href', /asymmetric-effort\.com/);
+  });
+
+  test('right section shows GitHub Repository link', async ({ page }) => {
+    const link = page.locator('footer a', { hasText: 'GitHub Repository' });
     await expect(link).toBeVisible();
     await expect(link).toHaveAttribute('href', /github\.com\/asymmetric-effort\/actions$/);
   });
 
-  test('renders Report an Issue link', async ({ page }) => {
-    const link = page.locator('.footer-links a', { hasText: 'Report an Issue' });
-    await expect(link).toBeVisible();
-    await expect(link).toHaveAttribute('href', /\/issues$/);
-  });
-
-  test('renders License link', async ({ page }) => {
-    const link = page.locator('.footer-links a', { hasText: 'License' });
-    await expect(link).toBeVisible();
-  });
-
-  test('has at least 4 footer links', async ({ page }) => {
-    const links = page.locator('.footer-links a');
-    const count = await links.count();
-    expect(count).toBeGreaterThanOrEqual(4);
-  });
-
-  test('renders project version', async ({ page }) => {
-    const version = page.locator('.footer-version');
-    await expect(version).toBeVisible();
-    const text = await version.textContent();
-    expect(text).toMatch(/^v\d+\.\d+\.\d+$/);
+  test('footer has exactly 2 links', async ({ page }) => {
+    const links = page.locator('footer a');
+    await expect(links).toHaveCount(2);
   });
 });
