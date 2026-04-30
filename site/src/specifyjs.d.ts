@@ -65,6 +65,13 @@ declare module '@asymmetric-effort/specifyjs/components' {
   export function Footer(props: FooterProps): SpecElement<Props>;
 }
 
+declare module '@asymmetric-effort/specifyjs/server' {
+  import type { SpecNode } from '@asymmetric-effort/specifyjs';
+
+  export function renderToString(element: SpecNode): string;
+  export function renderToStaticMarkup(element: SpecNode): string;
+}
+
 declare const __APP_VERSION__: string;
 
 declare module '@asymmetric-effort/specifyjs/jsx-runtime' {
