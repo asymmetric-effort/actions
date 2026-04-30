@@ -6,6 +6,7 @@ import { HomePage } from './components/HomePage';
 import { ActionDocs } from './components/ActionDocs';
 import { SecurityPage } from './components/SecurityPage';
 import { Footer } from './components/Footer';
+import { setPageMeta, routeMeta } from './seo';
 
 export type Route = 'home' | 'setup-bun' | 'fossa-scan' | 'gh-release' | 'go-tooling' | 'build-pkg-rpm' | 'build-pkg-deb' | 'npm-publish' | 'security';
 
@@ -34,6 +35,7 @@ function renderContent(route: Route): ReturnType<typeof createElement> {
 
 function renderApp(): void {
   const route = getRoute();
+  setPageMeta(routeMeta[route] || routeMeta['home']);
   const container = document.getElementById('root');
   if (!container) return;
 
@@ -51,6 +53,7 @@ function renderApp(): void {
 
 export function App(): ReturnType<typeof createElement> {
   const route = getRoute();
+  setPageMeta(routeMeta[route] || routeMeta['home']);
 
   // Set up hash-based routing via DOM events (outside render cycle)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
