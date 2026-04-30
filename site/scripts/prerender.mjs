@@ -209,6 +209,7 @@ function buildMetaTags() {
   tags.push(`<meta name="twitter:title" content="${routes[0].title}">`);
   tags.push(`<meta name="twitter:description" content="${routes[0].description}">`);
   tags.push(`<link rel="canonical" href="${SITE_URL}">`);
+  tags.push(`<link rel="sitemap" type="application/xml" href="/sitemap.xml">`);
   return tags.join('\n    ');
 }
 
@@ -254,6 +255,29 @@ function main() {
   html = html.replace('</body>', `${prerenderedBlock}\n  </body>`);
 
   writeFileSync(indexPath, html, 'utf-8');
+
+  // Generate sitemap.xml
+  const today = new Date().toISOString().split('T')[0];
+  const sitemapEntries = routes.map(r => {
+    const loc = r.slug === 'home' ? SITE_URL + '/' : `${SITE_URL}/#${r.slug}`;
+    const priority = r.slug === 'home' ? '1.0' : r.slug === 'security' ? '0.6' : '0.8';
+    return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
+  });
+
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${sitemapEntries.join('\n')}
+</urlset>
+`;
+  writeFileSync(resolve(DIST, 'sitemap.xml'), sitemap, 'utf-8');
+
+  // Generate robots.txt
+  const robots = `User-agent: *
+Allow: /
+
+Sitemap: ${SITE_URL}/sitemap.xml
+`;
+  writeFileSync(resolve(DIST, 'robots.txt'), robots, 'utf-8');
 
   console.log(`Pre-rendered ${routes.length} routes into ${indexPath}`);
   console.log(`  Meta tags: OG, Twitter Card, canonical, description`);
