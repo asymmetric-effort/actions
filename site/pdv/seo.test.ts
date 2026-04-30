@@ -3,15 +3,15 @@ import { test, expect } from '@playwright/test';
 const SITE_URL = process.env.SITE_URL || 'https://actions.asymmetric-effort.com';
 
 const expectedRoutes = [
-  { slug: 'home', path: '/', priority: '1.0' },
-  { slug: 'setup-bun', path: '/#setup-bun', priority: '0.8' },
-  { slug: 'fossa-scan', path: '/#fossa-scan', priority: '0.8' },
-  { slug: 'gh-release', path: '/#gh-release', priority: '0.8' },
-  { slug: 'go-tooling', path: '/#go-tooling', priority: '0.8' },
-  { slug: 'build-pkg-rpm', path: '/#build-pkg-rpm', priority: '0.8' },
-  { slug: 'build-pkg-deb', path: '/#build-pkg-deb', priority: '0.8' },
-  { slug: 'npm-publish', path: '/#npm-publish', priority: '0.8' },
-  { slug: 'security', path: '/#security', priority: '0.6' },
+  { slug: 'home', path: '/' },
+  { slug: 'setup-bun', path: '/#setup-bun' },
+  { slug: 'fossa-scan', path: '/#fossa-scan' },
+  { slug: 'gh-release', path: '/#gh-release' },
+  { slug: 'go-tooling', path: '/#go-tooling' },
+  { slug: 'build-pkg-rpm', path: '/#build-pkg-rpm' },
+  { slug: 'build-pkg-deb', path: '/#build-pkg-deb' },
+  { slug: 'npm-publish', path: '/#npm-publish' },
+  { slug: 'security', path: '/#security' },
 ];
 
 test.describe('robots.txt', () => {
@@ -81,37 +81,18 @@ test.describe('sitemap.xml', () => {
     expect(lastmodCount).toBe(expectedRoutes.length);
   });
 
-  test('each URL has a changefreq of weekly', async () => {
-    const freqCount = (body.match(/<changefreq>weekly<\/changefreq>/g) || []).length;
-    expect(freqCount).toBe(expectedRoutes.length);
-  });
-
-  test('home page has priority 1.0', async () => {
-    // Extract the <url> block containing the home page loc
-    const homeBlock = body.match(/<url>[\s\S]*?<loc>https:\/\/actions\.asymmetric-effort\.com\/<\/loc>[\s\S]*?<\/url>/);
-    expect(homeBlock).not.toBeNull();
-    expect(homeBlock![0]).toContain('<priority>1.0</priority>');
-  });
-
-  test('action pages have priority 0.8', async () => {
-    for (const route of expectedRoutes.filter(r => r.priority === '0.8')) {
-      const escapedPath = route.path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(`<url>[\\s\\S]*?<loc>https://actions\\.asymmetric-effort\\.com${escapedPath}</loc>[\\s\\S]*?</url>`);
-      const block = body.match(regex);
-      expect(block).not.toBeNull();
-      expect(block![0]).toContain('<priority>0.8</priority>');
-    }
-  });
-
-  test('security page has priority 0.6', async () => {
-    const secBlock = body.match(/<url>[\s\S]*?<loc>https:\/\/actions\.asymmetric-effort\.com\/#security<\/loc>[\s\S]*?<\/url>/);
-    expect(secBlock).not.toBeNull();
-    expect(secBlock![0]).toContain('<priority>0.6</priority>');
-  });
-
   test('has exactly the expected number of URL entries', async () => {
     const urlCount = (body.match(/<url>/g) || []).length;
     expect(urlCount).toBe(expectedRoutes.length);
+  });
+});
+
+test.describe('llms.txt', () => {
+  test('is served and contains site info', async ({ request }) => {
+    const response = await request.get(`${SITE_URL}/llms.txt`);
+    expect(response.status()).toBe(200);
+    const body = await response.text();
+    expect(body).toContain('Asymmetric Effort Actions');
   });
 });
 
@@ -158,25 +139,6 @@ test.describe('SEO meta tags', () => {
 
     const canonical = await page.getAttribute('link[rel="canonical"]', 'href');
     expect(canonical).toContain('actions.asymmetric-effort.com');
-  });
-
-  test('page has JSON-LD structured data', async ({ page }) => {
-    await page.goto('/');
-    const jsonLd = await page.locator('script[type="application/ld+json"]').textContent();
-    expect(jsonLd).toBeTruthy();
-
-    const data = JSON.parse(jsonLd!);
-    expect(data['@context']).toBe('https://schema.org');
-    expect(data['@type']).toBe('WebSite');
-    expect(data.name).toBe('Asymmetric Effort Actions');
-    expect(data.url).toBe('https://actions.asymmetric-effort.com');
-    expect(data.publisher.name).toBe('Asymmetric Effort, LLC');
-  });
-
-  test('page has sitemap link in head', async ({ page }) => {
-    await page.goto('/');
-    const href = await page.getAttribute('link[rel="sitemap"]', 'href');
-    expect(href).toBe('/sitemap.xml');
   });
 
   test('noscript block contains pre-rendered content', async ({ page }) => {

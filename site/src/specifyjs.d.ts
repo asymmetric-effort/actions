@@ -72,6 +72,41 @@ declare module '@asymmetric-effort/specifyjs/server' {
   export function renderToStaticMarkup(element: SpecNode): string;
 }
 
+declare module '@asymmetric-effort/specifyjs/build' {
+  import type { Plugin } from 'vite';
+
+  export interface SeoPluginConfig {
+    siteUrl: string;
+    title?: string;
+    description?: string;
+    routes?: string[];
+    docsDir?: string;
+    npmPackage?: string;
+    author?: string;
+    license?: string;
+    robotsRules?: string[];
+    repository?: string;
+  }
+
+  export interface NoscriptSection {
+    id: string;
+    title: string;
+    html: string;
+  }
+
+  export interface NoscriptPluginConfig {
+    title?: string;
+    description?: string;
+    sections: NoscriptSection[];
+    copyright?: string;
+    classPrefix?: string;
+    maxContentSize?: number;
+  }
+
+  export function specifyJsSeoPlugin(config: SeoPluginConfig): Plugin;
+  export function specifyJsNoscriptPlugin(config: NoscriptPluginConfig): Plugin;
+}
+
 declare const __APP_VERSION__: string;
 
 declare module '@asymmetric-effort/specifyjs/jsx-runtime' {

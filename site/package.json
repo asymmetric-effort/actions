@@ -1,11 +1,11 @@
 {
   "name": "actions-site",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && node scripts/prerender.mjs",
+    "build": "SPECIFYJS_ALLOW_PRERENDER=true tsc && SPECIFYJS_ALLOW_PRERENDER=true vite build",
     "preview": "vite preview",
     "test:pdv": "playwright test --config playwright.pdv.config.ts"
   },
