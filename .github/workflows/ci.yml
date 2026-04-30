@@ -68,4 +68,4 @@ jobs:
         run: npm ci
       - name: Build
         working-directory: site
-        run: npx vite build
+        run: npm run build
