@@ -8,11 +8,11 @@ import { SecurityPage } from './components/SecurityPage';
 import { Footer } from './components/Footer';
 import { setPageMeta, routeMeta } from './seo';
 
-export type Route = 'home' | 'setup-bun' | 'fossa-scan' | 'gh-release' | 'go-tooling' | 'build-pkg-rpm' | 'build-pkg-deb' | 'npm-publish' | 'security';
+export type Route = 'home' | 'setup-bun' | 'fossa-scan' | 'gh-release' | 'go-tooling' | 'build-pkg-rpm' | 'build-pkg-deb' | 'npm-publish' | 'release' | 'security';
 
 function getRoute(): Route {
   const hash = window.location.hash.replace('#', '') || 'home';
-  const valid: Route[] = ['home', 'setup-bun', 'fossa-scan', 'gh-release', 'go-tooling', 'build-pkg-rpm', 'build-pkg-deb', 'npm-publish', 'security'];
+  const valid: Route[] = ['home', 'setup-bun', 'fossa-scan', 'gh-release', 'go-tooling', 'build-pkg-rpm', 'build-pkg-deb', 'npm-publish', 'release', 'security'];
   return valid.includes(hash as Route) ? (hash as Route) : 'home';
 }
 
@@ -25,6 +25,7 @@ function renderContent(route: Route): ReturnType<typeof createElement> {
     case 'build-pkg-rpm':
     case 'build-pkg-deb':
     case 'npm-publish':
+    case 'release':
       return createElement(ActionDocs, { slug: route });
     case 'security':
       return createElement(SecurityPage, null);

@@ -35,6 +35,7 @@ jobs:
           shellcheck actions/build-pkg-rpm/scripts/*.sh
           shellcheck actions/build-pkg-deb/scripts/*.sh
           shellcheck actions/npm-publish/scripts/*.sh
+          shellcheck actions/release/scripts/*.sh
       - name: Lint test scripts
         run: |
           shellcheck tests/test-harness.sh
@@ -46,6 +47,7 @@ jobs:
           shellcheck tests/build-pkg-rpm/*.sh
           shellcheck tests/build-pkg-deb/*.sh
           shellcheck tests/npm-publish/*.sh
+          shellcheck tests/release/*.sh
 
   test:
     name: Test

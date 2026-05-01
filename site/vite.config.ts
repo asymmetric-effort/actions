@@ -16,6 +16,7 @@ const actions: Record<string, { name: string; desc: string; inputs: string[]; ou
   'build-pkg-rpm': { name: 'Build RPM Package', desc: 'Build RPM packages from a spec file or inline metadata for RHEL, Fedora, and CentOS.', inputs: ['spec-file', 'name', 'version', 'release', 'arch', 'summary', 'license', 'source-dir', 'install-prefix', 'output-dir', 'requires', 'scripts-pre', 'scripts-post'], outputs: ['rpm-path', 'rpm-name'] },
   'build-pkg-deb': { name: 'Build DEB Package', desc: 'Build Debian .deb packages from a control file or inline metadata.', inputs: ['control-file', 'name', 'version', 'arch', 'maintainer', 'summary', 'section', 'priority', 'source-dir', 'install-prefix', 'output-dir', 'depends', 'scripts-preinst', 'scripts-postinst'], outputs: ['deb-path', 'deb-name'] },
   'npm-publish': { name: 'NPM Publish', desc: 'Publish to npm using OIDC trusted publisher. No NPM_TOKEN secret required.', inputs: ['package-dir', 'tag', 'access', 'dry-run', 'registry', 'provenance'], outputs: ['version', 'package', 'registry-url'] },
+  'release': { name: 'Release', desc: 'Full-featured GitHub Release management. Replaces softprops/action-gh-release.', inputs: ['tag_name', 'name', 'body', 'body_path', 'append_body', 'draft', 'prerelease', 'files', 'working_directory', 'overwrite_files', 'fail_on_unmatched_files', 'target_commitish', 'generate_release_notes', 'previous_tag', 'discussion_category_name', 'make_latest', 'token', 'repository'], outputs: ['url', 'id', 'upload_url', 'assets'] },
 };
 
 function actionHtml(slug: string): string {

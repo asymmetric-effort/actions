@@ -1,0 +1,136 @@
+name: "Release"
+description: "Create or update GitHub Releases with asset uploads — full-featured release management"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "tag"
+  color: "green"
+
+inputs:
+  tag_name:
+    description: "Git tag for the release"
+    required: false
+    default: ${{ github.ref_name }}
+  name:
+    description: "Release name (defaults to tag name)"
+    required: false
+  body:
+    description: "Release notes text"
+    required: false
+  body_path:
+    description: "Path to file containing release notes"
+    required: false
+  append_body:
+    description: "Append body to existing release notes instead of replacing"
+    required: false
+    default: "false"
+  draft:
+    description: "Create as draft release"
+    required: false
+    default: "false"
+  prerelease:
+    description: "Mark as prerelease"
+    required: false
+    default: "false"
+  files:
+    description: "Newline-delimited glob patterns for assets to upload"
+    required: false
+  working_directory:
+    description: "Base directory for resolving file globs"
+    required: false
+    default: ${{ github.workspace }}
+  overwrite_files:
+    description: "Replace existing assets with the same name"
+    required: false
+    default: "true"
+  fail_on_unmatched_files:
+    description: "Fail if a glob pattern matches no files"
+    required: false
+    default: "false"
+  preserve_order:
+    description: "Upload assets sequentially (not in parallel)"
+    required: false
+    default: "true"
+  target_commitish:
+    description: "Commitish for tag creation"
+    required: false
+  generate_release_notes:
+    description: "Auto-generate release notes via GitHub API"
+    required: false
+    default: "false"
+  previous_tag:
+    description: "Base tag for auto-generated release notes comparison"
+    required: false
+  discussion_category_name:
+    description: "Create a linked discussion in this category"
+    required: false
+  make_latest:
+    description: "Mark as latest release (true/false/legacy)"
+    required: false
+  token:
+    description: "GitHub token"
+    required: false
+    default: ${{ github.token }}
+  repository:
+    description: "Target repository (owner/repo)"
+    required: false
+    default: ${{ github.repository }}
+
+outputs:
+  url:
+    description: "HTML URL of the release"
+    value: ${{ steps.release.outputs.url }}
+  id:
+    description: "Release ID"
+    value: ${{ steps.release.outputs.id }}
+  upload_url:
+    description: "Upload URL for additional assets"
+    value: ${{ steps.release.outputs.upload_url }}
+  assets:
+    description: "JSON array of uploaded asset metadata"
+    value: ${{ steps.upload.outputs.assets || '[]' }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create or update release
+      id: release
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        INPUT_TAG_NAME: ${{ inputs.tag_name }}
+        INPUT_NAME: ${{ inputs.name }}
+        INPUT_BODY: ${{ inputs.body }}
+        INPUT_BODY_PATH: ${{ inputs.body_path }}
+        INPUT_APPEND_BODY: ${{ inputs.append_body }}
+        INPUT_DRAFT: ${{ inputs.draft }}
+        INPUT_PRERELEASE: ${{ inputs.prerelease }}
+        INPUT_TARGET_COMMITISH: ${{ inputs.target_commitish }}
+        INPUT_GENERATE_RELEASE_NOTES: ${{ inputs.generate_release_notes }}
+        INPUT_PREVIOUS_TAG: ${{ inputs.previous_tag }}
+        INPUT_DISCUSSION_CATEGORY_NAME: ${{ inputs.discussion_category_name }}
+        INPUT_MAKE_LATEST: ${{ inputs.make_latest }}
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_WORKING_DIRECTORY: ${{ inputs.working_directory }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/release.sh"
+        create_or_update_release
+
+    - name: Upload assets
+      id: upload
+      if: inputs.files != ''
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        INPUT_FILES: ${{ inputs.files }}
+        INPUT_WORKING_DIRECTORY: ${{ inputs.working_directory }}
+        INPUT_OVERWRITE_FILES: ${{ inputs.overwrite_files }}
+        INPUT_FAIL_ON_UNMATCHED_FILES: ${{ inputs.fail_on_unmatched_files }}
+        INPUT_PRESERVE_ORDER: ${{ inputs.preserve_order }}
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        RELEASE_TAG: ${{ steps.release.outputs.tag }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/assets.sh"
+        upload_assets

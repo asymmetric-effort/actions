@@ -272,6 +272,55 @@ const actions: Record<string, ActionData> = {
       { name: 'registry-url', description: 'The registry URL used' },
     ],
   },
+  'release': {
+    name: 'Release',
+    description: 'Full-featured GitHub Release management with asset uploads. Create or update releases, upload artifacts via glob patterns, auto-generate notes, link discussions, and append to existing release bodies. Drop-in replacement for softprops/action-gh-release.',
+    badge: 'Release',
+    badgeColor: 'badge-green',
+    usage: `# Basic release with auto-generated notes
+- uses: asymmetric-effort/actions/actions/release@v1
+  with:
+    generate_release_notes: "true"
+
+# Upload build artifacts
+- uses: asymmetric-effort/actions/actions/release@v1
+  with:
+    files: |
+      dist/*.tar.gz
+      dist/*.zip
+
+# Release notes from file with discussion
+- uses: asymmetric-effort/actions/actions/release@v1
+  with:
+    body_path: CHANGELOG.md
+    discussion_category_name: "Releases"`,
+    inputs: [
+      { name: 'tag_name', description: 'Git tag for the release', required: false, default: '${{ github.ref_name }}' },
+      { name: 'name', description: 'Release name (defaults to tag)', required: false },
+      { name: 'body', description: 'Release notes text', required: false },
+      { name: 'body_path', description: 'Path to file with release notes', required: false },
+      { name: 'append_body', description: 'Append body to existing notes', required: false, default: 'false' },
+      { name: 'draft', description: 'Create as draft', required: false, default: 'false' },
+      { name: 'prerelease', description: 'Mark as prerelease', required: false, default: 'false' },
+      { name: 'files', description: 'Newline-delimited glob patterns', required: false },
+      { name: 'working_directory', description: 'Base dir for file globs', required: false, default: '${{ github.workspace }}' },
+      { name: 'overwrite_files', description: 'Replace existing assets', required: false, default: 'true' },
+      { name: 'fail_on_unmatched_files', description: 'Fail if glob matches nothing', required: false, default: 'false' },
+      { name: 'target_commitish', description: 'Commitish for tag creation', required: false },
+      { name: 'generate_release_notes', description: 'Auto-generate notes', required: false, default: 'false' },
+      { name: 'previous_tag', description: 'Base tag for auto-generated notes', required: false },
+      { name: 'discussion_category_name', description: 'Link a discussion in this category', required: false },
+      { name: 'make_latest', description: 'Latest release flag (true/false/legacy)', required: false },
+      { name: 'token', description: 'GitHub token', required: false, default: '${{ github.token }}' },
+      { name: 'repository', description: 'Target repo (owner/repo)', required: false, default: '${{ github.repository }}' },
+    ],
+    outputs: [
+      { name: 'url', description: 'HTML URL of the release' },
+      { name: 'id', description: 'Release ID' },
+      { name: 'upload_url', description: 'Upload URL for additional assets' },
+      { name: 'assets', description: 'JSON array of uploaded asset metadata' },
+    ],
+  },
 };
 
 function InputsTable(props: { inputs: ActionInput[] }): ReturnType<typeof createElement> {

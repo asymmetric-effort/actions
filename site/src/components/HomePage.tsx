@@ -58,6 +58,13 @@ const cards: CardInfo[] = [
     badge: 'Publishing',
     badgeColor: 'badge-orange',
   },
+  {
+    slug: 'release',
+    name: 'Release',
+    desc: 'Full-featured GitHub Release management. Replaces softprops/action-gh-release.',
+    badge: 'Release',
+    badgeColor: 'badge-green',
+  },
 ];
 
 interface BenefitInfo {

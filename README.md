@@ -17,6 +17,7 @@ This project provides clean-room implementations of commonly used GitHub Actions
 | [build-pkg-rpm](./actions/build-pkg-rpm) | Build RPM packages from spec or inline metadata | Active |
 | [build-pkg-deb](./actions/build-pkg-deb) | Build DEB packages from control file or inline metadata | Active |
 | [npm-publish](./actions/npm-publish) | Publish to npm using OIDC trusted publisher | Active |
+| [release](./actions/release) | Full-featured GitHub Release management (replaces softprops/action-gh-release) | Active |
 
 ## Usage
 
