@@ -28,6 +28,7 @@ const sections: NavSection[] = [
       { label: 'build-pkg-deb', route: 'build-pkg-deb' },
       { label: 'npm-publish', route: 'npm-publish' },
       { label: 'release', route: 'release' },
+      { label: 'deploy-pages', route: 'deploy-pages' },
     ],
   },
   {

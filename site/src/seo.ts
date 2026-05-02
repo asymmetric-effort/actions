@@ -110,6 +110,16 @@ export const routeMeta: Record<string, PageMeta> = {
     description: 'Publish to npm using OIDC trusted publisher. No long-lived NPM_TOKEN secret required.',
     canonical: `${SITE_URL}/#npm-publish`,
   },
+  'release': {
+    title: 'Release',
+    description: 'Full-featured GitHub Release management with asset uploads, auto-generated notes, and discussion linking.',
+    canonical: `${SITE_URL}/#release`,
+  },
+  'deploy-pages': {
+    title: 'Deploy Pages',
+    description: 'Deploy static files to GitHub Pages via branch push with custom domains, deploy keys, and orphan branches.',
+    canonical: `${SITE_URL}/#deploy-pages`,
+  },
   'security': {
     title: 'Security',
     description: 'Security best practices for using Asymmetric Effort GitHub Actions. Handling secrets, token permissions, and version pinning.',

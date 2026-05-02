@@ -65,6 +65,13 @@ const cards: CardInfo[] = [
     badge: 'Release',
     badgeColor: 'badge-green',
   },
+  {
+    slug: 'deploy-pages',
+    name: 'Deploy Pages',
+    desc: 'Deploy static files to GitHub Pages via branch push. Replaces peaceiris/actions-gh-pages.',
+    badge: 'Deployment',
+    badgeColor: 'badge-blue',
+  },
 ];
 
 interface BenefitInfo {

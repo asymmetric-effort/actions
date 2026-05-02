@@ -36,6 +36,7 @@ jobs:
           shellcheck actions/build-pkg-deb/scripts/*.sh
           shellcheck actions/npm-publish/scripts/*.sh
           shellcheck actions/release/scripts/*.sh
+          shellcheck actions/deploy-pages/scripts/*.sh
       - name: Lint test scripts
         run: |
           shellcheck tests/test-harness.sh
@@ -48,6 +49,7 @@ jobs:
           shellcheck tests/build-pkg-deb/*.sh
           shellcheck tests/npm-publish/*.sh
           shellcheck tests/release/*.sh
+          shellcheck tests/deploy-pages/*.sh
 
   test:
     name: Test

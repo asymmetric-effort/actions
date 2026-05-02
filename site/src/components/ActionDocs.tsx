@@ -321,6 +321,55 @@ const actions: Record<string, ActionData> = {
       { name: 'assets', description: 'JSON array of uploaded asset metadata' },
     ],
   },
+  'deploy-pages': {
+    name: 'Deploy Pages',
+    description: 'Deploy static files to GitHub Pages by pushing to a deploy branch. Supports custom domains, SSH deploy keys, orphan branches, Jekyll control, asset exclusion, and tagging. Drop-in replacement for peaceiris/actions-gh-pages.',
+    badge: 'Deployment',
+    badgeColor: 'badge-blue',
+    usage: `# Basic deploy to gh-pages branch
+- uses: asymmetric-effort/actions/actions/deploy-pages@v1
+  with:
+    token: \${{ secrets.GITHUB_TOKEN }}
+    publish_dir: ./dist
+
+# Deploy with custom domain
+- uses: asymmetric-effort/actions/actions/deploy-pages@v1
+  with:
+    token: \${{ secrets.GITHUB_TOKEN }}
+    publish_dir: ./build
+    cname: my-site.example.com
+
+# Force orphan (single-commit history)
+- uses: asymmetric-effort/actions/actions/deploy-pages@v1
+  with:
+    token: \${{ secrets.GITHUB_TOKEN }}
+    publish_dir: ./public
+    force_orphan: "true"`,
+    inputs: [
+      { name: 'token', description: 'GitHub token for pushing', required: false, default: '${{ github.token }}' },
+      { name: 'deploy_key', description: 'SSH private key for pushing', required: false },
+      { name: 'publish_dir', description: 'Directory to deploy', required: false, default: 'public' },
+      { name: 'publish_branch', description: 'Target branch', required: false, default: 'gh-pages' },
+      { name: 'destination_dir', description: 'Subdirectory within the publish branch', required: false },
+      { name: 'external_repository', description: 'Deploy to a different repo (owner/repo)', required: false },
+      { name: 'allow_empty_commit', description: 'Allow empty commits', required: false, default: 'false' },
+      { name: 'keep_files', description: 'Keep existing files in the branch', required: false, default: 'false' },
+      { name: 'force_orphan', description: 'Single-commit history', required: false, default: 'false' },
+      { name: 'user_name', description: 'Git committer name', required: false, default: 'github-actions[bot]' },
+      { name: 'user_email', description: 'Git committer email', required: false },
+      { name: 'commit_message', description: 'Custom commit message (SHA appended)', required: false },
+      { name: 'full_commit_message', description: 'Full commit message (no SHA appended)', required: false },
+      { name: 'tag_name', description: 'Create a tag on the deploy commit', required: false },
+      { name: 'tag_message', description: 'Annotated tag message', required: false },
+      { name: 'enable_jekyll', description: 'Enable Jekyll (skip .nojekyll)', required: false, default: 'false' },
+      { name: 'cname', description: 'Custom domain (writes CNAME file)', required: false },
+      { name: 'exclude_assets', description: 'Patterns to exclude from publish_dir', required: false, default: '.github' },
+    ],
+    outputs: [
+      { name: 'deploy_branch', description: 'The branch deployed to' },
+      { name: 'commit_hash', description: 'SHA of the deploy commit' },
+    ],
+  },
 };
 
 function InputsTable(props: { inputs: ActionInput[] }): ReturnType<typeof createElement> {

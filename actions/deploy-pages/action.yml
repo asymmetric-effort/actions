@@ -1,0 +1,126 @@
+name: "Deploy Pages"
+description: "Deploy static files to GitHub Pages via a publish branch"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "upload-cloud"
+  color: "blue"
+
+inputs:
+  token:
+    description: "GitHub token for pushing to the deploy branch"
+    required: false
+    default: ${{ github.token }}
+  deploy_key:
+    description: "SSH private key for pushing to the remote branch"
+    required: false
+  publish_dir:
+    description: "Directory containing the files to deploy"
+    required: false
+    default: "public"
+  publish_branch:
+    description: "Target branch for deployment"
+    required: false
+    default: "gh-pages"
+  destination_dir:
+    description: "Subdirectory within the publish branch"
+    required: false
+  external_repository:
+    description: "External repository to deploy to (owner/repo)"
+    required: false
+  allow_empty_commit:
+    description: "Allow empty commits to the publish branch"
+    required: false
+    default: "false"
+  keep_files:
+    description: "Keep existing files in the publish branch"
+    required: false
+    default: "false"
+  force_orphan:
+    description: "Force push as an orphan branch (single-commit history)"
+    required: false
+    default: "false"
+  user_name:
+    description: "Git user.name for commits"
+    required: false
+    default: "github-actions[bot]"
+  user_email:
+    description: "Git user.email for commits"
+    required: false
+    default: "41898282+github-actions[bot]@users.noreply.github.com"
+  commit_message:
+    description: "Custom commit message (source commit hash is appended)"
+    required: false
+  full_commit_message:
+    description: "Full commit message (used as-is, no hash appended)"
+    required: false
+  tag_name:
+    description: "Create a tag on the deploy commit"
+    required: false
+  tag_message:
+    description: "Annotated tag message (if empty, lightweight tag is created)"
+    required: false
+  enable_jekyll:
+    description: "Enable Jekyll processing (do not create .nojekyll)"
+    required: false
+    default: "false"
+  cname:
+    description: "Custom domain — writes a CNAME file"
+    required: false
+  exclude_assets:
+    description: "Newline-delimited patterns to exclude from publish_dir"
+    required: false
+    default: ".github"
+
+outputs:
+  deploy_branch:
+    description: "The branch that was deployed to"
+    value: ${{ steps.deploy.outputs.deploy_branch }}
+  commit_hash:
+    description: "The SHA of the deploy commit"
+    value: ${{ steps.deploy.outputs.commit_hash }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate inputs
+      shell: bash
+      env:
+        INPUT_PUBLISH_DIR: ${{ inputs.publish_dir }}
+        INPUT_TOKEN: ${{ inputs.token }}
+        INPUT_DEPLOY_KEY: ${{ inputs.deploy_key }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/validate.sh"
+        validate_inputs
+
+    - name: Deploy
+      id: deploy
+      shell: bash
+      env:
+        INPUT_TOKEN: ${{ inputs.token }}
+        INPUT_DEPLOY_KEY: ${{ inputs.deploy_key }}
+        INPUT_PUBLISH_DIR: ${{ inputs.publish_dir }}
+        INPUT_PUBLISH_BRANCH: ${{ inputs.publish_branch }}
+        INPUT_DESTINATION_DIR: ${{ inputs.destination_dir }}
+        INPUT_EXTERNAL_REPOSITORY: ${{ inputs.external_repository }}
+        INPUT_ALLOW_EMPTY_COMMIT: ${{ inputs.allow_empty_commit }}
+        INPUT_KEEP_FILES: ${{ inputs.keep_files }}
+        INPUT_FORCE_ORPHAN: ${{ inputs.force_orphan }}
+        INPUT_USER_NAME: ${{ inputs.user_name }}
+        INPUT_USER_EMAIL: ${{ inputs.user_email }}
+        INPUT_COMMIT_MESSAGE: ${{ inputs.commit_message }}
+        INPUT_FULL_COMMIT_MESSAGE: ${{ inputs.full_commit_message }}
+        INPUT_TAG_NAME: ${{ inputs.tag_name }}
+        INPUT_TAG_MESSAGE: ${{ inputs.tag_message }}
+        INPUT_ENABLE_JEKYLL: ${{ inputs.enable_jekyll }}
+        INPUT_CNAME: ${{ inputs.cname }}
+        INPUT_EXCLUDE_ASSETS: ${{ inputs.exclude_assets }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_SHA: ${{ github.sha }}
+        GITHUB_ACTOR: ${{ github.actor }}
+        GITHUB_SERVER_URL: ${{ github.server_url }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/deploy.sh"
+        deploy_to_pages

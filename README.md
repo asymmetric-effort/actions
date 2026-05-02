@@ -18,6 +18,7 @@ This project provides clean-room implementations of commonly used GitHub Actions
 | [build-pkg-deb](./actions/build-pkg-deb) | Build DEB packages from control file or inline metadata | Active |
 | [npm-publish](./actions/npm-publish) | Publish to npm using OIDC trusted publisher | Active |
 | [release](./actions/release) | Full-featured GitHub Release management (replaces softprops/action-gh-release) | Active |
+| [deploy-pages](./actions/deploy-pages) | Deploy static files to GitHub Pages via branch push (replaces peaceiris/actions-gh-pages) | Active |
 
 ## Usage
 
