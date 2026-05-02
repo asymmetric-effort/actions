@@ -11,6 +11,8 @@ const expectedRoutes = [
   { slug: 'build-pkg-rpm', path: '/#build-pkg-rpm' },
   { slug: 'build-pkg-deb', path: '/#build-pkg-deb' },
   { slug: 'npm-publish', path: '/#npm-publish' },
+  { slug: 'release', path: '/#release' },
+  { slug: 'deploy-pages', path: '/#deploy-pages' },
   { slug: 'security', path: '/#security' },
 ];
 
