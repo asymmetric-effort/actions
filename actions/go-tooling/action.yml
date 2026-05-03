@@ -62,16 +62,20 @@ runs:
     - name: Compute cache key
       id: cache-key
       shell: bash
+      env:
+        INPUT_CACHE_KEY_SUFFIX: ${{ inputs.cache-key-suffix }}
+        RUNNER_OS_VAL: ${{ runner.os }}
+        RUNNER_ARCH_VAL: ${{ runner.arch }}
+        GO_VERSION_VAL: ${{ steps.resolve.outputs.go-version }}
       run: |
         set -euo pipefail
         GOSUM_HASH="none"
         if [[ -f "go.sum" ]]; then
           GOSUM_HASH="$(sha256sum go.sum | cut -d' ' -f1)"
         fi
-        SUFFIX="${{ inputs.cache-key-suffix }}"
-        KEY="go-tooling-${{ runner.os }}-${{ runner.arch }}-${{ steps.resolve.outputs.go-version }}-${GOSUM_HASH}"
-        if [[ -n "${SUFFIX}" ]]; then
-          KEY="${KEY}-${SUFFIX}"
+        KEY="go-tooling-${RUNNER_OS_VAL}-${RUNNER_ARCH_VAL}-${GO_VERSION_VAL}-${GOSUM_HASH}"
+        if [[ -n "${INPUT_CACHE_KEY_SUFFIX}" ]]; then
+          KEY="${KEY}-${INPUT_CACHE_KEY_SUFFIX}"
         fi
         echo "cache-key=${KEY}" >> "${GITHUB_OUTPUT}"
         echo "::notice::Cache key: ${KEY}"

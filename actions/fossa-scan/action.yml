@@ -47,8 +47,10 @@ runs:
   steps:
     - name: Validate inputs
       shell: bash
+      env:
+        INPUT_API_KEY: ${{ inputs.api-key }}
       run: |
-        if [ -z "${{ inputs.api-key }}" ]; then
+        if [ -z "${INPUT_API_KEY}" ]; then
           echo "::error::api-key input is required"
           exit 1
         fi
@@ -106,22 +108,26 @@ runs:
       shell: bash
       env:
         FOSSA_API_KEY: ${{ inputs.api-key }}
+        INPUT_ENDPOINT: ${{ inputs.endpoint }}
+        INPUT_PROJECT: ${{ inputs.project }}
+        INPUT_BRANCH: ${{ inputs.branch }}
+        INPUT_DEBUG: ${{ inputs.debug }}
       working-directory: ${{ inputs.working-directory }}
       run: |
         set -euo pipefail
 
         ARGS=()
-        ARGS+=("--endpoint" "${{ inputs.endpoint }}")
+        ARGS+=("--endpoint" "${INPUT_ENDPOINT}")
 
-        if [ -n "${{ inputs.project }}" ]; then
-          ARGS+=("--project" "${{ inputs.project }}")
+        if [ -n "${INPUT_PROJECT}" ]; then
+          ARGS+=("--project" "${INPUT_PROJECT}")
         fi
 
-        if [ -n "${{ inputs.branch }}" ]; then
-          ARGS+=("--branch" "${{ inputs.branch }}")
+        if [ -n "${INPUT_BRANCH}" ]; then
+          ARGS+=("--branch" "${INPUT_BRANCH}")
         fi
 
-        if [ "${{ inputs.debug }}" = "true" ]; then
+        if [ "${INPUT_DEBUG}" = "true" ]; then
           ARGS+=("--debug")
         fi
 
@@ -134,14 +140,16 @@ runs:
       shell: bash
       env:
         FOSSA_API_KEY: ${{ inputs.api-key }}
+        INPUT_ENDPOINT: ${{ inputs.endpoint }}
+        INPUT_DEBUG: ${{ inputs.debug }}
       working-directory: ${{ inputs.working-directory }}
       run: |
         set -euo pipefail
 
         ARGS=()
-        ARGS+=("--endpoint" "${{ inputs.endpoint }}")
+        ARGS+=("--endpoint" "${INPUT_ENDPOINT}")
 
-        if [ "${{ inputs.debug }}" = "true" ]; then
+        if [ "${INPUT_DEBUG}" = "true" ]; then
           ARGS+=("--debug")
         fi
 
