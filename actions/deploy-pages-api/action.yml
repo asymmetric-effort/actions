@@ -1,0 +1,66 @@
+name: "Deploy Pages (API)"
+description: "Deploy to GitHub Pages using the Pages deployment API"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "globe"
+  color: "blue"
+
+inputs:
+  token:
+    description: "GitHub token with pages:write permission"
+    required: false
+    default: ${{ github.token }}
+  timeout:
+    description: "Maximum time (ms) to wait for deployment to finish"
+    required: false
+    default: "600000"
+  error_count:
+    description: "Maximum consecutive polling errors before failing"
+    required: false
+    default: "10"
+  reporting_interval:
+    description: "Interval (ms) between deployment status polls"
+    required: false
+    default: "5000"
+  artifact_name:
+    description: "Name of the artifact to download and deploy"
+    required: false
+    default: "github-pages"
+
+outputs:
+  page_url:
+    description: "The URL of the deployed GitHub Pages site"
+    value: ${{ steps.deploy.outputs.page_url }}
+
+# Required permissions:
+#   pages: write
+#   id-token: write
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: ${{ runner.temp }}/pages-artifact
+
+    - name: Deploy via Pages API
+      id: deploy
+      shell: bash
+      env:
+        INPUT_TOKEN: ${{ inputs.token }}
+        INPUT_TIMEOUT: ${{ inputs.timeout }}
+        INPUT_ERROR_COUNT: ${{ inputs.error_count }}
+        INPUT_REPORTING_INTERVAL: ${{ inputs.reporting_interval }}
+        INPUT_ARTIFACT_NAME: ${{ inputs.artifact_name }}
+        ARTIFACT_DIR: ${{ runner.temp }}/pages-artifact
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_SHA: ${{ github.sha }}
+        GITHUB_API_URL: ${{ github.api_url }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/deploy.sh"
+        source "${GITHUB_ACTION_PATH}/scripts/poll-status.sh"
+        deploy_pages_api
