@@ -1,0 +1,95 @@
+name: "Setup Go"
+description: "Install and configure the Go toolchain"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "download-cloud"
+  color: "blue"
+
+inputs:
+  go-version:
+    description: "Go version to install (e.g., 1.26.2, 'latest', or 'stable')"
+    required: false
+    default: ""
+  go-version-file:
+    description: "File to read Go version from (e.g., go.mod, .go-version)"
+    required: false
+    default: ""
+  check-latest:
+    description: "Check for the latest available version matching the input"
+    required: false
+    default: "false"
+  cache:
+    description: "Enable caching of Go modules"
+    required: false
+    default: "true"
+  cache-dependency-path:
+    description: "Path to dependency file(s) for cache key (e.g., go.sum)"
+    required: false
+    default: ""
+  token:
+    description: "GitHub token for API requests (avoids rate limits)"
+    required: false
+    default: ${{ github.token }}
+  architecture:
+    description: "Target architecture (e.g., amd64, arm64). Defaults to runner architecture."
+    required: false
+    default: ""
+
+outputs:
+  go-version:
+    description: "The installed Go version"
+    value: ${{ steps.install.outputs.go-version }}
+  cache-hit:
+    description: "Whether the Go modules were restored from cache"
+    value: ${{ steps.cache-restore.outputs.cache-hit || 'false' }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Resolve Go version
+      id: resolve
+      shell: bash
+      env:
+        INPUT_GO_VERSION: ${{ inputs.go-version }}
+        INPUT_GO_VERSION_FILE: ${{ inputs.go-version-file }}
+        INPUT_CHECK_LATEST: ${{ inputs.check-latest }}
+        INPUT_ARCHITECTURE: ${{ inputs.architecture }}
+        INPUT_TOKEN: ${{ inputs.token }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/resolve-version.sh"
+        resolve_setup_go_version
+
+    - name: Restore cache
+      id: cache-restore
+      if: inputs.cache == 'true'
+      uses: actions/cache/restore@v5
+      with:
+        path: |
+          ~/go/pkg/mod
+          ~/.cache/go-build
+        key: setup-go-${{ runner.os }}-${{ runner.arch }}-${{ steps.resolve.outputs.go-version }}-${{ hashFiles(inputs.cache-dependency-path || '**/go.sum') }}
+        restore-keys: |
+          setup-go-${{ runner.os }}-${{ runner.arch }}-${{ steps.resolve.outputs.go-version }}-
+
+    - name: Install Go
+      id: install
+      shell: bash
+      env:
+        RESOLVED_VERSION: ${{ steps.resolve.outputs.go-version }}
+        DOWNLOAD_URL: ${{ steps.resolve.outputs.download-url }}
+        CACHE_HIT: ${{ steps.cache-restore.outputs.cache-hit || 'false' }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/install-go.sh"
+        install_setup_go
+
+    - name: Save cache
+      if: inputs.cache == 'true' && steps.cache-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v5
+      with:
+        path: |
+          ~/go/pkg/mod
+          ~/.cache/go-build
+        key: setup-go-${{ runner.os }}-${{ runner.arch }}-${{ steps.resolve.outputs.go-version }}-${{ hashFiles(inputs.cache-dependency-path || '**/go.sum') }}
