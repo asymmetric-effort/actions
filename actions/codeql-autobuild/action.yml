@@ -1,0 +1,32 @@
+name: "CodeQL Autobuild"
+description: "Auto-detect and build the project for CodeQL analysis"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "cpu"
+  color: "purple"
+
+inputs:
+  language:
+    description: "Language to build (if empty, builds all initialized languages)"
+    required: false
+    default: ""
+  build-command:
+    description: "Custom build command to use instead of auto-detection"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Autobuild for CodeQL
+      id: autobuild
+      shell: bash
+      env:
+        INPUT_LANGUAGE: ${{ inputs.language }}
+        INPUT_BUILD_COMMAND: ${{ inputs.build-command }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/../codeql-common/scripts/shared.sh"
+        source "${GITHUB_ACTION_PATH}/scripts/autobuild.sh"
+        autobuild_codeql

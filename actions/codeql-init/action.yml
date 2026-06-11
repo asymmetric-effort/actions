@@ -1,0 +1,51 @@
+name: "CodeQL Init"
+description: "Initialize CodeQL databases for security analysis"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "shield"
+  color: "purple"
+
+inputs:
+  languages:
+    description: "Comma-separated list of languages to analyze (e.g. 'go,javascript')"
+    required: true
+  config-file:
+    description: "Path to CodeQL configuration file"
+    required: false
+    default: ""
+  queries:
+    description: "Comma-separated list of additional query packs or suites"
+    required: false
+    default: ""
+  tools:
+    description: "CodeQL CLI version to use ('latest' or a specific version)"
+    required: false
+    default: "latest"
+  token:
+    description: "GitHub token for downloading CodeQL CLI and uploading results"
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  codeql-path:
+    description: "Path to the CodeQL CLI binary"
+    value: ${{ steps.init.outputs.codeql-path }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Initialize CodeQL
+      id: init
+      shell: bash
+      env:
+        INPUT_LANGUAGES: ${{ inputs.languages }}
+        INPUT_CONFIG_FILE: ${{ inputs.config-file }}
+        INPUT_QUERIES: ${{ inputs.queries }}
+        INPUT_TOOLS: ${{ inputs.tools }}
+        INPUT_TOKEN: ${{ inputs.token }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/../codeql-common/scripts/shared.sh"
+        source "${GITHUB_ACTION_PATH}/scripts/init.sh"
+        init_codeql

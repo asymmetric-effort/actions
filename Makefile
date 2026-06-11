@@ -16,6 +16,16 @@ lint:
 	@shellcheck actions/npm-publish/scripts/*.sh
 	@shellcheck actions/release/scripts/*.sh
 	@shellcheck actions/deploy-pages/scripts/*.sh
+	@shellcheck actions/checkout/scripts/*.sh
+	@shellcheck actions/setup-go/scripts/*.sh
+	@shellcheck actions/setup-node/scripts/*.sh
+	@shellcheck actions/setup-python/scripts/*.sh
+	@shellcheck actions/upload-pages-artifact/scripts/*.sh
+	@shellcheck actions/deploy-pages-api/scripts/*.sh
+	@shellcheck actions/codeql-common/scripts/*.sh
+	@shellcheck actions/codeql-init/scripts/*.sh
+	@shellcheck actions/codeql-autobuild/scripts/*.sh
+	@shellcheck actions/codeql-analyze/scripts/*.sh
 	@shellcheck tests/test-harness.sh
 	@shellcheck tests/setup-bun/*.sh
 	@shellcheck tests/gh-release/*.sh
@@ -26,6 +36,13 @@ lint:
 	@shellcheck tests/npm-publish/*.sh
 	@shellcheck tests/release/*.sh
 	@shellcheck tests/deploy-pages/*.sh
+	@shellcheck tests/checkout/*.sh
+	@shellcheck tests/setup-go/*.sh
+	@shellcheck tests/setup-node/*.sh
+	@shellcheck tests/setup-python/*.sh
+	@shellcheck tests/upload-pages-artifact/*.sh
+	@shellcheck tests/deploy-pages-api/*.sh
+	@shellcheck tests/codeql/*.sh
 	@shellcheck tests/run-all.sh
 	@echo "All lint checks passed."
 

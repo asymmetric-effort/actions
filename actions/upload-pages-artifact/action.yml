@@ -1,0 +1,53 @@
+name: "Upload Pages Artifact"
+description: "Package and upload a directory as a GitHub Pages deployment artifact"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "upload-cloud"
+  color: "orange"
+
+inputs:
+  path:
+    description: "Directory containing the static files to deploy"
+    required: false
+    default: "."
+  retention-days:
+    description: "Number of days to retain the artifact"
+    required: false
+    default: "1"
+
+outputs:
+  artifact-id:
+    description: "The ID of the uploaded artifact"
+    value: ${{ steps.upload.outputs.artifact-id }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate inputs
+      shell: bash
+      env:
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_RETENTION_DAYS: ${{ inputs.retention-days }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/validate.sh"
+        validate_pages_inputs
+
+    - name: Package artifact
+      id: package
+      shell: bash
+      env:
+        INPUT_PATH: ${{ inputs.path }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/package.sh"
+        package_pages_artifact
+
+    - name: Upload artifact
+      id: upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: github-pages
+        path: ${{ steps.package.outputs.artifact-path }}
+        retention-days: ${{ inputs.retention-days }}
