@@ -1,0 +1,47 @@
+name: "CodeQL Analyze"
+description: "Run CodeQL analysis and upload results"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "search"
+  color: "purple"
+
+inputs:
+  category:
+    description: "Category for the SARIF upload (used to distinguish multiple analyses)"
+    required: false
+    default: ""
+  output:
+    description: "Directory to write SARIF output files"
+    required: false
+    default: ""
+  upload:
+    description: "Whether to upload SARIF results to GitHub Code Scanning"
+    required: false
+    default: "true"
+  token:
+    description: "GitHub token for uploading results"
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  sarif-output:
+    description: "Path to the directory containing SARIF output files"
+    value: ${{ steps.analyze.outputs.sarif-output }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Analyze with CodeQL
+      id: analyze
+      shell: bash
+      env:
+        INPUT_CATEGORY: ${{ inputs.category }}
+        INPUT_OUTPUT: ${{ inputs.output }}
+        INPUT_UPLOAD: ${{ inputs.upload }}
+        INPUT_TOKEN: ${{ inputs.token }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/../codeql-common/scripts/shared.sh"
+        source "${GITHUB_ACTION_PATH}/scripts/analyze.sh"
+        analyze_codeql
