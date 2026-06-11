@@ -1,0 +1,92 @@
+name: "Checkout"
+description: "Check out repository source code"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "git-commit"
+  color: "blue"
+
+inputs:
+  repository:
+    description: "Repository name with owner (e.g., owner/repo)"
+    required: false
+    default: ${{ github.repository }}
+  ref:
+    description: "Branch, tag, or SHA to checkout (default: the triggering ref)"
+    required: false
+    default: ""
+  token:
+    description: "GitHub token for authentication"
+    required: false
+    default: ${{ github.token }}
+  path:
+    description: "Relative path under $GITHUB_WORKSPACE to place the repository"
+    required: false
+    default: "."
+  fetch-depth:
+    description: "Number of commits to fetch (0 for full history)"
+    required: false
+    default: "1"
+  submodules:
+    description: "Whether to checkout submodules: false, true, or recursive"
+    required: false
+    default: "false"
+  lfs:
+    description: "Whether to download Git LFS objects"
+    required: false
+    default: "false"
+  clean:
+    description: "Whether to clean the workspace before checkout"
+    required: false
+    default: "true"
+  persist-credentials:
+    description: "Whether to persist the token in the local git config"
+    required: false
+    default: "true"
+
+outputs:
+  ref:
+    description: "The ref that was checked out"
+    value: ${{ steps.checkout.outputs.ref }}
+  commit:
+    description: "The commit SHA that was checked out"
+    value: ${{ steps.checkout.outputs.commit }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate inputs
+      id: validate
+      shell: bash
+      env:
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_REF: ${{ inputs.ref }}
+        INPUT_TOKEN: ${{ inputs.token }}
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_FETCH_DEPTH: ${{ inputs.fetch-depth }}
+        INPUT_SUBMODULES: ${{ inputs.submodules }}
+        INPUT_LFS: ${{ inputs.lfs }}
+        INPUT_CLEAN: ${{ inputs.clean }}
+        INPUT_PERSIST_CREDENTIALS: ${{ inputs.persist-credentials }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/validate.sh"
+        validate_checkout_inputs
+
+    - name: Checkout repository
+      id: checkout
+      shell: bash
+      env:
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_REF: ${{ inputs.ref }}
+        INPUT_TOKEN: ${{ inputs.token }}
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_FETCH_DEPTH: ${{ inputs.fetch-depth }}
+        INPUT_SUBMODULES: ${{ inputs.submodules }}
+        INPUT_LFS: ${{ inputs.lfs }}
+        INPUT_CLEAN: ${{ inputs.clean }}
+        INPUT_PERSIST_CREDENTIALS: ${{ inputs.persist-credentials }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/checkout.sh"
+        checkout_repository
