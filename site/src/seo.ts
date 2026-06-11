@@ -120,6 +120,51 @@ export const routeMeta: Record<string, PageMeta> = {
     description: 'Deploy static files to GitHub Pages via branch push with custom domains, deploy keys, and orphan branches.',
     canonical: `${SITE_URL}/#deploy-pages`,
   },
+  'checkout': {
+    title: 'Checkout',
+    description: 'Check out repository source code with support for shallow clones, submodules, LFS, and credential management. Replaces actions/checkout.',
+    canonical: `${SITE_URL}/#checkout`,
+  },
+  'setup-go': {
+    title: 'Setup Go',
+    description: 'Install and configure the Go toolchain with version resolution, module caching, and go.mod support. Replaces actions/setup-go.',
+    canonical: `${SITE_URL}/#setup-go`,
+  },
+  'setup-node': {
+    title: 'Setup Node.js',
+    description: 'Install and configure Node.js with version resolution, LTS support, npm/yarn/pnpm caching, and registry configuration. Replaces actions/setup-node.',
+    canonical: `${SITE_URL}/#setup-node`,
+  },
+  'setup-python': {
+    title: 'Setup Python',
+    description: 'Install and configure the Python runtime with version resolution, tool cache support, and pip/pipenv/poetry caching. Replaces actions/setup-python.',
+    canonical: `${SITE_URL}/#setup-python`,
+  },
+  'upload-pages-artifact': {
+    title: 'Upload Pages Artifact',
+    description: 'Package and upload a directory as a GitHub Pages deployment artifact with automatic .nojekyll injection. Replaces actions/upload-pages-artifact.',
+    canonical: `${SITE_URL}/#upload-pages-artifact`,
+  },
+  'deploy-pages-api': {
+    title: 'Deploy Pages (API)',
+    description: 'Deploy to GitHub Pages using the Pages deployment API with OIDC authentication and status polling. Replaces actions/deploy-pages.',
+    canonical: `${SITE_URL}/#deploy-pages-api`,
+  },
+  'codeql-init': {
+    title: 'CodeQL Init',
+    description: 'Initialize CodeQL databases for security analysis. Downloads CodeQL CLI and creates databases for specified languages. Replaces github/codeql-action/init.',
+    canonical: `${SITE_URL}/#codeql-init`,
+  },
+  'codeql-autobuild': {
+    title: 'CodeQL Autobuild',
+    description: 'Auto-detect and build the project for CodeQL analysis with support for Go, JavaScript, Java, C/C++, and more. Replaces github/codeql-action/autobuild.',
+    canonical: `${SITE_URL}/#codeql-autobuild`,
+  },
+  'codeql-analyze': {
+    title: 'CodeQL Analyze',
+    description: 'Run CodeQL analysis and upload SARIF results to GitHub Code Scanning. Replaces github/codeql-action/analyze.',
+    canonical: `${SITE_URL}/#codeql-analyze`,
+  },
   'security': {
     title: 'Security',
     description: 'Security best practices for using Asymmetric Effort GitHub Actions. Handling secrets, token permissions, and version pinning.',

@@ -1,6 +1,46 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Deep linking', () => {
+  test('direct navigation to #checkout renders docs', async ({ page }) => {
+    await page.goto('/#checkout');
+    await page.waitForSelector('.action-card-body');
+
+    const heading = page.locator('.action-card-header h2');
+    await expect(heading).toContainText('Checkout');
+  });
+
+  test('direct navigation to #setup-go renders docs', async ({ page }) => {
+    await page.goto('/#setup-go');
+    await page.waitForSelector('.action-card-body');
+
+    const heading = page.locator('.action-card-header h2');
+    await expect(heading).toContainText('Setup Go');
+  });
+
+  test('direct navigation to #setup-node renders docs', async ({ page }) => {
+    await page.goto('/#setup-node');
+    await page.waitForSelector('.action-card-body');
+
+    const heading = page.locator('.action-card-header h2');
+    await expect(heading).toContainText('Setup Node');
+  });
+
+  test('direct navigation to #setup-python renders docs', async ({ page }) => {
+    await page.goto('/#setup-python');
+    await page.waitForSelector('.action-card-body');
+
+    const heading = page.locator('.action-card-header h2');
+    await expect(heading).toContainText('Setup Python');
+  });
+
+  test('direct navigation to #codeql-init renders docs', async ({ page }) => {
+    await page.goto('/#codeql-init');
+    await page.waitForSelector('.action-card-body');
+
+    const heading = page.locator('.action-card-header h2');
+    await expect(heading).toContainText('CodeQL Init');
+  });
+
   test('direct navigation to #setup-bun renders docs', async ({ page }) => {
     await page.goto('/#setup-bun');
     await page.waitForSelector('.action-card-body');

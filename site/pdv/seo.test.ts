@@ -4,7 +4,11 @@ const SITE_URL = process.env.SITE_URL || 'https://actions.asymmetric-effort.com'
 
 const expectedRoutes = [
   { slug: 'home', path: '/' },
+  { slug: 'checkout', path: '/#checkout' },
   { slug: 'setup-bun', path: '/#setup-bun' },
+  { slug: 'setup-go', path: '/#setup-go' },
+  { slug: 'setup-node', path: '/#setup-node' },
+  { slug: 'setup-python', path: '/#setup-python' },
   { slug: 'fossa-scan', path: '/#fossa-scan' },
   { slug: 'gh-release', path: '/#gh-release' },
   { slug: 'go-tooling', path: '/#go-tooling' },
@@ -13,6 +17,11 @@ const expectedRoutes = [
   { slug: 'npm-publish', path: '/#npm-publish' },
   { slug: 'release', path: '/#release' },
   { slug: 'deploy-pages', path: '/#deploy-pages' },
+  { slug: 'deploy-pages-api', path: '/#deploy-pages-api' },
+  { slug: 'upload-pages-artifact', path: '/#upload-pages-artifact' },
+  { slug: 'codeql-init', path: '/#codeql-init' },
+  { slug: 'codeql-autobuild', path: '/#codeql-autobuild' },
+  { slug: 'codeql-analyze', path: '/#codeql-analyze' },
   { slug: 'security', path: '/#security' },
 ];
 
@@ -147,11 +156,20 @@ test.describe('SEO meta tags', () => {
     await page.goto('/');
     const noscript = await page.locator('noscript').innerHTML();
     expect(noscript).toContain('Asymmetric Effort Actions');
+    expect(noscript).toContain('checkout');
     expect(noscript).toContain('setup-bun');
+    expect(noscript).toContain('setup-go');
+    expect(noscript).toContain('setup-node');
+    expect(noscript).toContain('setup-python');
     expect(noscript).toContain('fossa-scan');
     expect(noscript).toContain('gh-release');
     expect(noscript).toContain('go-tooling');
     expect(noscript).toContain('npm-publish');
+    expect(noscript).toContain('deploy-pages-api');
+    expect(noscript).toContain('upload-pages-artifact');
+    expect(noscript).toContain('codeql-init');
+    expect(noscript).toContain('codeql-autobuild');
+    expect(noscript).toContain('codeql-analyze');
     expect(noscript).toContain('security');
   });
 });

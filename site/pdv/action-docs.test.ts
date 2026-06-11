@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const actionSlugs = ['setup-bun', 'fossa-scan', 'gh-release'] as const;
+const actionSlugs = ['checkout', 'setup-bun', 'setup-go', 'setup-node', 'setup-python', 'fossa-scan', 'gh-release', 'deploy-pages-api', 'upload-pages-artifact', 'codeql-init', 'codeql-autobuild', 'codeql-analyze'] as const;
 
 for (const slug of actionSlugs) {
   test.describe(`${slug} documentation page`, () => {
@@ -18,7 +18,7 @@ for (const slug of actionSlugs) {
       const badge = page.locator('.action-badge');
       await expect(badge).toBeVisible();
       const text = await badge.textContent();
-      expect(['Runtime', 'Security', 'Release']).toContain(text);
+      expect(['Core', 'Runtime', 'Security', 'Release', 'Deployment', 'Toolchain', 'Packaging', 'Publishing']).toContain(text);
     });
 
     test('renders action name in h2', async ({ page }) => {
@@ -63,24 +63,23 @@ for (const slug of actionSlugs) {
       expect(count).toBeGreaterThanOrEqual(1);
     });
 
-    test('renders Outputs table with headers', async ({ page }) => {
+    test('renders Outputs section', async ({ page }) => {
       const outputsHeading = page.locator('h3', { hasText: 'Outputs' });
       await expect(outputsHeading).toBeVisible();
 
-      const tables = page.locator('.param-table');
-      const lastTable = tables.last();
-      await expect(lastTable).toBeVisible();
+      // codeql-autobuild has no outputs, so it may not render a table
+      if (slug !== 'codeql-autobuild') {
+        const tables = page.locator('.param-table');
+        const lastTable = tables.last();
+        await expect(lastTable).toBeVisible();
 
-      const headers = await lastTable.locator('th').allTextContents();
-      expect(headers).toEqual(['Output', 'Description']);
-    });
+        const headers = await lastTable.locator('th').allTextContents();
+        expect(headers).toEqual(['Output', 'Description']);
 
-    test('outputs table has at least one row', async ({ page }) => {
-      const tables = page.locator('.param-table');
-      const lastTable = tables.last();
-      const rows = lastTable.locator('tbody tr');
-      const count = await rows.count();
-      expect(count).toBeGreaterThanOrEqual(1);
+        const rows = lastTable.locator('tbody tr');
+        const count = await rows.count();
+        expect(count).toBeGreaterThanOrEqual(1);
+      }
     });
 
     test('input names use monospace styling', async ({ page }) => {

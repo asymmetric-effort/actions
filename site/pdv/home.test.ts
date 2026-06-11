@@ -33,33 +33,44 @@ test.describe('Home page', () => {
   test('renders action cards for all actions', async ({ page }) => {
     const cards = page.locator('.action-card');
     const count = await cards.count();
-    expect(count).toBeGreaterThanOrEqual(7);
+    expect(count).toBeGreaterThanOrEqual(16);
   });
 
   test('action cards have correct names', async ({ page }) => {
     const cardTexts = await page.locator('.action-card strong').allTextContents();
+    expect(cardTexts).toContain('Checkout');
     expect(cardTexts).toContain('Setup Bun');
+    expect(cardTexts).toContain('Setup Go');
+    expect(cardTexts).toContain('Setup Node.js');
+    expect(cardTexts).toContain('Setup Python');
     expect(cardTexts).toContain('FOSSA Scan');
     expect(cardTexts).toContain('GitHub Release');
     expect(cardTexts).toContain('Go Tooling');
     expect(cardTexts).toContain('Build RPM Package');
     expect(cardTexts).toContain('Build DEB Package');
     expect(cardTexts).toContain('NPM Publish');
+    expect(cardTexts).toContain('Deploy Pages (API)');
+    expect(cardTexts).toContain('Upload Pages Artifact');
+    expect(cardTexts).toContain('CodeQL Init');
+    expect(cardTexts).toContain('CodeQL Autobuild');
+    expect(cardTexts).toContain('CodeQL Analyze');
   });
 
   test('action cards have category badges', async ({ page }) => {
     const badges = await page.locator('.action-badge').allTextContents();
+    expect(badges).toContain('Core');
     expect(badges).toContain('Runtime');
     expect(badges).toContain('Security');
     expect(badges).toContain('Release');
     expect(badges).toContain('Toolchain');
     expect(badges).toContain('Packaging');
     expect(badges).toContain('Publishing');
+    expect(badges).toContain('Deployment');
   });
 
   test('clicking an action card navigates to its docs', async ({ page }) => {
     await page.locator('.action-card').first().click();
     await page.waitForSelector('.action-card-body');
-    expect(page.url()).toContain('#setup-bun');
+    expect(page.url()).toContain('#checkout');
   });
 });
