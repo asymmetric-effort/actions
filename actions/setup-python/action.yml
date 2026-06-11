@@ -1,0 +1,87 @@
+name: "Setup Python"
+description: "Install and configure the Python runtime"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "code"
+  color: "yellow"
+
+inputs:
+  python-version:
+    description: "Python version to install (e.g., '3.12', '3.11.5')"
+    required: false
+    default: ""
+  python-version-file:
+    description: "File to read Python version from (e.g., .python-version)"
+    required: false
+    default: ".python-version"
+  cache:
+    description: "Package manager to cache (pip, pipenv, or poetry)"
+    required: false
+    default: ""
+  architecture:
+    description: "Target architecture (x64 or arm64)"
+    required: false
+    default: "x64"
+  token:
+    description: "GitHub token for API requests (avoids rate limits)"
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  python-version:
+    description: "The installed Python version"
+    value: ${{ steps.install.outputs.python-version }}
+  python-path:
+    description: "Path to the Python executable"
+    value: ${{ steps.install.outputs.python-path }}
+  cache-hit:
+    description: "Whether the package cache was restored"
+    value: ${{ steps.cache-restore.outputs.cache-hit || 'false' }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Resolve version
+      id: resolve
+      shell: bash
+      env:
+        INPUT_PYTHON_VERSION: ${{ inputs.python-version }}
+        INPUT_PYTHON_VERSION_FILE: ${{ inputs.python-version-file }}
+        INPUT_ARCHITECTURE: ${{ inputs.architecture }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/resolve-version.sh"
+        resolve_python_version
+
+    - name: Restore cache
+      id: cache-restore
+      if: inputs.cache != ''
+      uses: actions/cache/restore@v5
+      with:
+        path: ${{ steps.install.outputs.cache-dir || '~/.cache/pip' }}
+        key: python-${{ runner.os }}-${{ runner.arch }}-${{ steps.resolve.outputs.python-version }}-${{ hashFiles('**/requirements*.txt', '**/Pipfile.lock', '**/poetry.lock') }}
+        restore-keys: |
+          python-${{ runner.os }}-${{ runner.arch }}-${{ steps.resolve.outputs.python-version }}-
+
+    - name: Install Python
+      id: install
+      shell: bash
+      env:
+        RESOLVED_VERSION: ${{ steps.resolve.outputs.python-version }}
+        DOWNLOAD_URL: ${{ steps.resolve.outputs.download-url }}
+        INPUT_ARCHITECTURE: ${{ inputs.architecture }}
+        INPUT_CACHE: ${{ inputs.cache }}
+        TOOL_CACHE: ${{ runner.tool_cache }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/install-python.sh"
+        source "${GITHUB_ACTION_PATH}/scripts/cache-utils.sh"
+        install_python
+
+    - name: Save cache
+      if: inputs.cache != '' && steps.cache-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v5
+      with:
+        path: ${{ steps.install.outputs.cache-dir || '~/.cache/pip' }}
+        key: python-${{ runner.os }}-${{ runner.arch }}-${{ steps.resolve.outputs.python-version }}-${{ hashFiles('**/requirements*.txt', '**/Pipfile.lock', '**/poetry.lock') }}
