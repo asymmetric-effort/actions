@@ -1,0 +1,98 @@
+name: "Setup Node.js"
+description: "Install and configure Node.js"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "hexagon"
+  color: "green"
+
+inputs:
+  node-version:
+    description: "Node.js version to install (semver, 'lts/*', 'lts/iron', 'latest', etc.)"
+    required: false
+    default: ""
+  node-version-file:
+    description: "File to read Node.js version from (e.g., .nvmrc, .node-version, package.json)"
+    required: false
+    default: ""
+  cache:
+    description: "Package manager to cache (npm, yarn, or pnpm)"
+    required: false
+    default: ""
+  registry-url:
+    description: "npm registry URL to configure in .npmrc"
+    required: false
+    default: ""
+  architecture:
+    description: "Target architecture (x64, arm64)"
+    required: false
+    default: "x64"
+  token:
+    description: "GitHub token for API requests"
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  node-version:
+    description: "The installed Node.js version"
+    value: ${{ steps.install.outputs.node-version }}
+  cache-hit:
+    description: "Whether the package manager cache was restored"
+    value: ${{ steps.cache-restore.outputs.cache-hit || 'false' }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Resolve version
+      id: resolve
+      shell: bash
+      env:
+        INPUT_NODE_VERSION: ${{ inputs.node-version }}
+        INPUT_NODE_VERSION_FILE: ${{ inputs.node-version-file }}
+        INPUT_ARCHITECTURE: ${{ inputs.architecture }}
+        INPUT_TOKEN: ${{ inputs.token }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/resolve-version.sh"
+        resolve_node_version
+
+    - name: Restore cache
+      id: cache-restore
+      if: inputs.cache != ''
+      uses: actions/cache/restore@v5
+      with:
+        path: ${{ steps.resolve.outputs.cache-dir }}
+        key: ${{ steps.resolve.outputs.cache-key }}
+
+    - name: Install Node.js
+      id: install
+      shell: bash
+      env:
+        RESOLVED_VERSION: ${{ steps.resolve.outputs.node-version }}
+        DOWNLOAD_URL: ${{ steps.resolve.outputs.download-url }}
+        CACHE_HIT: ${{ steps.cache-restore.outputs.cache-hit || 'false' }}
+        TOOL_CACHE: ${{ runner.tool_cache }}
+        INPUT_REGISTRY_URL: ${{ inputs.registry-url }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/install-node.sh"
+        install_node
+
+    - name: Detect cache directory
+      id: cache-dir
+      if: inputs.cache != ''
+      shell: bash
+      env:
+        INPUT_CACHE: ${{ inputs.cache }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/cache-utils.sh"
+        dir="$(get_cache_dir "${INPUT_CACHE}")"
+        echo "cache-dir=${dir}" >> "${GITHUB_OUTPUT}"
+
+    - name: Save cache
+      if: inputs.cache != '' && steps.cache-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v5
+      with:
+        path: ${{ steps.cache-dir.outputs.cache-dir }}
+        key: ${{ steps.resolve.outputs.cache-key }}
