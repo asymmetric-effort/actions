@@ -9,17 +9,27 @@ test.describe('Navigation', () => {
   test('renders all navigation links', async ({ page }) => {
     const navLinks = page.locator('.nav-link');
     const count = await navLinks.count();
-    expect(count).toBeGreaterThanOrEqual(9);
+    expect(count).toBeGreaterThanOrEqual(18);
 
     const labels = await navLinks.allTextContents();
     expect(labels).toContain('Home');
+    expect(labels).toContain('checkout');
     expect(labels).toContain('setup-bun');
+    expect(labels).toContain('setup-go');
+    expect(labels).toContain('setup-node');
+    expect(labels).toContain('setup-python');
     expect(labels).toContain('fossa-scan');
     expect(labels).toContain('gh-release');
     expect(labels).toContain('go-tooling');
     expect(labels).toContain('build-pkg-rpm');
     expect(labels).toContain('build-pkg-deb');
     expect(labels).toContain('npm-publish');
+    expect(labels).toContain('deploy-pages');
+    expect(labels).toContain('deploy-pages-api');
+    expect(labels).toContain('upload-pages-artifact');
+    expect(labels).toContain('codeql-init');
+    expect(labels).toContain('codeql-autobuild');
+    expect(labels).toContain('codeql-analyze');
     expect(labels).toContain('Security');
   });
 

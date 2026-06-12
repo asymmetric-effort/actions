@@ -10,11 +10,39 @@ interface CardInfo {
 
 const cards: CardInfo[] = [
   {
+    slug: 'checkout',
+    name: 'Checkout',
+    desc: 'Check out repository source code with support for submodules, LFS, and shallow clones.',
+    badge: 'Core',
+    badgeColor: 'badge-blue',
+  },
+  {
     slug: 'setup-bun',
     name: 'Setup Bun',
     desc: 'Install and configure the Bun JavaScript runtime with version pinning and caching.',
     badge: 'Runtime',
     badgeColor: 'badge-orange',
+  },
+  {
+    slug: 'setup-go',
+    name: 'Setup Go',
+    desc: 'Install and configure the Go toolchain with module and build caching.',
+    badge: 'Runtime',
+    badgeColor: 'badge-blue',
+  },
+  {
+    slug: 'setup-node',
+    name: 'Setup Node.js',
+    desc: 'Install and configure Node.js with npm/yarn/pnpm caching and LTS support.',
+    badge: 'Runtime',
+    badgeColor: 'badge-green',
+  },
+  {
+    slug: 'setup-python',
+    name: 'Setup Python',
+    desc: 'Install and configure Python with pip/pipenv/poetry caching.',
+    badge: 'Runtime',
+    badgeColor: 'badge-yellow',
   },
   {
     slug: 'fossa-scan',
@@ -71,6 +99,41 @@ const cards: CardInfo[] = [
     desc: 'Deploy static files to GitHub Pages via branch push. Replaces peaceiris/actions-gh-pages.',
     badge: 'Deployment',
     badgeColor: 'badge-blue',
+  },
+  {
+    slug: 'deploy-pages-api',
+    name: 'Deploy Pages (API)',
+    desc: 'Deploy to GitHub Pages using the Pages deployment API with OIDC authentication.',
+    badge: 'Deployment',
+    badgeColor: 'badge-blue',
+  },
+  {
+    slug: 'upload-pages-artifact',
+    name: 'Upload Pages Artifact',
+    desc: 'Package and upload a directory as a GitHub Pages deployment artifact.',
+    badge: 'Deployment',
+    badgeColor: 'badge-orange',
+  },
+  {
+    slug: 'codeql-init',
+    name: 'CodeQL Init',
+    desc: 'Initialize CodeQL databases for security analysis. Supports multiple languages.',
+    badge: 'Security',
+    badgeColor: 'badge-purple',
+  },
+  {
+    slug: 'codeql-autobuild',
+    name: 'CodeQL Autobuild',
+    desc: 'Auto-detect and build the project for CodeQL analysis.',
+    badge: 'Security',
+    badgeColor: 'badge-purple',
+  },
+  {
+    slug: 'codeql-analyze',
+    name: 'CodeQL Analyze',
+    desc: 'Run CodeQL analysis and upload SARIF results to GitHub Code Scanning.',
+    badge: 'Security',
+    badgeColor: 'badge-purple',
   },
 ];
 

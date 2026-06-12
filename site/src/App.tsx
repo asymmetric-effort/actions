@@ -8,11 +8,11 @@ import { SecurityPage } from './components/SecurityPage';
 import { Footer } from './components/Footer';
 import { setPageMeta, routeMeta } from './seo';
 
-export type Route = 'home' | 'setup-bun' | 'fossa-scan' | 'gh-release' | 'go-tooling' | 'build-pkg-rpm' | 'build-pkg-deb' | 'npm-publish' | 'release' | 'deploy-pages' | 'security';
+export type Route = 'home' | 'setup-bun' | 'fossa-scan' | 'gh-release' | 'go-tooling' | 'build-pkg-rpm' | 'build-pkg-deb' | 'npm-publish' | 'release' | 'deploy-pages' | 'checkout' | 'setup-go' | 'setup-node' | 'setup-python' | 'upload-pages-artifact' | 'deploy-pages-api' | 'codeql-init' | 'codeql-autobuild' | 'codeql-analyze' | 'security';
 
 function getRoute(): Route {
   const hash = window.location.hash.replace('#', '') || 'home';
-  const valid: Route[] = ['home', 'setup-bun', 'fossa-scan', 'gh-release', 'go-tooling', 'build-pkg-rpm', 'build-pkg-deb', 'npm-publish', 'release', 'deploy-pages', 'security'];
+  const valid: Route[] = ['home', 'setup-bun', 'fossa-scan', 'gh-release', 'go-tooling', 'build-pkg-rpm', 'build-pkg-deb', 'npm-publish', 'release', 'deploy-pages', 'checkout', 'setup-go', 'setup-node', 'setup-python', 'upload-pages-artifact', 'deploy-pages-api', 'codeql-init', 'codeql-autobuild', 'codeql-analyze', 'security'];
   return valid.includes(hash as Route) ? (hash as Route) : 'home';
 }
 
@@ -27,6 +27,15 @@ function renderContent(route: Route): ReturnType<typeof createElement> {
     case 'npm-publish':
     case 'release':
     case 'deploy-pages':
+    case 'checkout':
+    case 'setup-go':
+    case 'setup-node':
+    case 'setup-python':
+    case 'upload-pages-artifact':
+    case 'deploy-pages-api':
+    case 'codeql-init':
+    case 'codeql-autobuild':
+    case 'codeql-analyze':
       return createElement(ActionDocs, { slug: route });
     case 'security':
       return createElement(SecurityPage, null);

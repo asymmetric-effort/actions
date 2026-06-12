@@ -23,6 +23,45 @@ interface ActionData {
 }
 
 const actions: Record<string, ActionData> = {
+  'checkout': {
+    name: 'Checkout',
+    description: 'Check out repository source code in your GitHub Actions workflows. Supports shallow and full clones, submodules, Git LFS, custom refs, and credential management. Drop-in replacement for actions/checkout.',
+    badge: 'Core',
+    badgeColor: 'badge-blue',
+    usage: `# Basic checkout
+- uses: asymmetric-effort/actions/actions/checkout@v1
+
+# Checkout a specific branch
+- uses: asymmetric-effort/actions/actions/checkout@v1
+  with:
+    ref: "develop"
+
+# Full clone with submodules
+- uses: asymmetric-effort/actions/actions/checkout@v1
+  with:
+    fetch-depth: "0"
+    submodules: "recursive"
+
+# Checkout with LFS
+- uses: asymmetric-effort/actions/actions/checkout@v1
+  with:
+    lfs: "true"`,
+    inputs: [
+      { name: 'repository', description: 'Repository name with owner (e.g., owner/repo)', required: false, default: '${{ github.repository }}' },
+      { name: 'ref', description: 'Branch, tag, or SHA to checkout', required: false, default: '' },
+      { name: 'token', description: 'GitHub token for authentication', required: false, default: '${{ github.token }}' },
+      { name: 'path', description: 'Relative path to place the repository', required: false, default: '.' },
+      { name: 'fetch-depth', description: 'Number of commits to fetch (0 for full history)', required: false, default: '1' },
+      { name: 'submodules', description: 'Checkout submodules: false, true, or recursive', required: false, default: 'false' },
+      { name: 'lfs', description: 'Download Git LFS objects', required: false, default: 'false' },
+      { name: 'clean', description: 'Clean workspace before checkout', required: false, default: 'true' },
+      { name: 'persist-credentials', description: 'Persist token in local git config', required: false, default: 'true' },
+    ],
+    outputs: [
+      { name: 'ref', description: 'The ref that was checked out' },
+      { name: 'commit', description: 'The commit SHA that was checked out' },
+    ],
+  },
   'setup-bun': {
     name: 'Setup Bun',
     description: 'Install and configure the Bun JavaScript runtime in your GitHub Actions workflows. Supports version pinning, version files, and binary caching for fast CI builds.',
@@ -321,6 +360,107 @@ const actions: Record<string, ActionData> = {
       { name: 'assets', description: 'JSON array of uploaded asset metadata' },
     ],
   },
+  'setup-go': {
+    name: 'Setup Go',
+    description: 'Install and configure the Go toolchain in your GitHub Actions workflows. Supports version pinning, go.mod resolution, module and build caching, and architecture selection. Drop-in replacement for actions/setup-go.',
+    badge: 'Runtime',
+    badgeColor: 'badge-blue',
+    usage: `# Install latest stable Go
+- uses: asymmetric-effort/actions/actions/setup-go@v1
+  with:
+    go-version: "stable"
+
+# Read version from go.mod
+- uses: asymmetric-effort/actions/actions/setup-go@v1
+  with:
+    go-version-file: "go.mod"
+
+# Pin a specific version
+- uses: asymmetric-effort/actions/actions/setup-go@v1
+  with:
+    go-version: "1.26.3"`,
+    inputs: [
+      { name: 'go-version', description: 'Go version to install (e.g., 1.26.2, latest, stable)', required: false },
+      { name: 'go-version-file', description: 'File to read Go version from (e.g., go.mod, .go-version)', required: false },
+      { name: 'check-latest', description: 'Check for the latest available version', required: false, default: 'false' },
+      { name: 'cache', description: 'Enable caching of Go modules', required: false, default: 'true' },
+      { name: 'cache-dependency-path', description: 'Path to dependency file(s) for cache key', required: false },
+      { name: 'token', description: 'GitHub token for API requests', required: false, default: '${{ github.token }}' },
+      { name: 'architecture', description: 'Target architecture (amd64, arm64)', required: false },
+    ],
+    outputs: [
+      { name: 'go-version', description: 'The installed Go version' },
+      { name: 'cache-hit', description: 'Whether Go modules were restored from cache' },
+    ],
+  },
+  'setup-node': {
+    name: 'Setup Node.js',
+    description: 'Install and configure Node.js in your GitHub Actions workflows. Supports version pinning, .nvmrc/.node-version files, LTS versions, npm/yarn/pnpm caching, and private registry configuration. Drop-in replacement for actions/setup-node.',
+    badge: 'Runtime',
+    badgeColor: 'badge-green',
+    usage: `# Install Node.js 24
+- uses: asymmetric-effort/actions/actions/setup-node@v1
+  with:
+    node-version: "24"
+    cache: "npm"
+
+# Read from .nvmrc
+- uses: asymmetric-effort/actions/actions/setup-node@v1
+  with:
+    node-version-file: ".nvmrc"
+    cache: "npm"
+
+# Use latest LTS
+- uses: asymmetric-effort/actions/actions/setup-node@v1
+  with:
+    node-version: "lts/*"`,
+    inputs: [
+      { name: 'node-version', description: 'Node.js version (semver, lts/*, lts/iron, latest)', required: false },
+      { name: 'node-version-file', description: 'File to read version from (.nvmrc, .node-version, package.json)', required: false },
+      { name: 'cache', description: 'Package manager to cache (npm, yarn, pnpm)', required: false },
+      { name: 'registry-url', description: 'npm registry URL for .npmrc', required: false },
+      { name: 'architecture', description: 'Target architecture (x64, arm64)', required: false, default: 'x64' },
+      { name: 'token', description: 'GitHub token for API requests', required: false, default: '${{ github.token }}' },
+    ],
+    outputs: [
+      { name: 'node-version', description: 'The installed Node.js version' },
+      { name: 'cache-hit', description: 'Whether the package manager cache was restored' },
+    ],
+  },
+  'setup-python': {
+    name: 'Setup Python',
+    description: 'Install and configure the Python runtime in your GitHub Actions workflows. Supports version pinning, .python-version files, tool cache / apt / source installation, and pip/pipenv/poetry caching. Drop-in replacement for actions/setup-python.',
+    badge: 'Runtime',
+    badgeColor: 'badge-yellow',
+    usage: `# Install Python 3.12
+- uses: asymmetric-effort/actions/actions/setup-python@v1
+  with:
+    python-version: "3.12"
+    cache: "pip"
+
+# Read from .python-version
+- uses: asymmetric-effort/actions/actions/setup-python@v1
+  with:
+    cache: "pip"
+
+# Poetry project
+- uses: asymmetric-effort/actions/actions/setup-python@v1
+  with:
+    python-version: "3.11"
+    cache: "poetry"`,
+    inputs: [
+      { name: 'python-version', description: 'Python version to install (e.g., 3.12, 3.11.5)', required: false },
+      { name: 'python-version-file', description: 'File to read version from (e.g., .python-version)', required: false, default: '.python-version' },
+      { name: 'cache', description: 'Package manager to cache (pip, pipenv, poetry)', required: false },
+      { name: 'architecture', description: 'Target architecture (x64, arm64)', required: false, default: 'x64' },
+      { name: 'token', description: 'GitHub token for API requests', required: false, default: '${{ github.token }}' },
+    ],
+    outputs: [
+      { name: 'python-version', description: 'The installed Python version' },
+      { name: 'python-path', description: 'Path to the Python executable' },
+      { name: 'cache-hit', description: 'Whether the package cache was restored' },
+    ],
+  },
   'deploy-pages': {
     name: 'Deploy Pages',
     description: 'Deploy static files to GitHub Pages by pushing to a deploy branch. Supports custom domains, SSH deploy keys, orphan branches, Jekyll control, asset exclusion, and tagging. Drop-in replacement for peaceiris/actions-gh-pages.',
@@ -368,6 +508,132 @@ const actions: Record<string, ActionData> = {
     outputs: [
       { name: 'deploy_branch', description: 'The branch deployed to' },
       { name: 'commit_hash', description: 'SHA of the deploy commit' },
+    ],
+  },
+  'deploy-pages-api': {
+    name: 'Deploy Pages (API)',
+    description: 'Deploy to GitHub Pages using the Pages deployment API with OIDC token authentication. Downloads a previously uploaded artifact and creates a deployment via the GitHub API. Drop-in replacement for actions/deploy-pages.',
+    badge: 'Deployment',
+    badgeColor: 'badge-blue',
+    usage: `# Deploy after uploading artifact
+- uses: asymmetric-effort/actions/actions/deploy-pages-api@v1
+  with:
+    token: \${{ secrets.GITHUB_TOKEN }}
+
+# With custom timeout
+- uses: asymmetric-effort/actions/actions/deploy-pages-api@v1
+  with:
+    token: \${{ secrets.GITHUB_TOKEN }}
+    timeout: "900000"`,
+    inputs: [
+      { name: 'token', description: 'GitHub token with pages:write permission', required: false, default: '${{ github.token }}' },
+      { name: 'timeout', description: 'Maximum time (ms) to wait for deployment', required: false, default: '600000' },
+      { name: 'error_count', description: 'Max consecutive polling errors before failing', required: false, default: '10' },
+      { name: 'reporting_interval', description: 'Interval (ms) between status polls', required: false, default: '5000' },
+      { name: 'artifact_name', description: 'Name of the artifact to deploy', required: false, default: 'github-pages' },
+    ],
+    outputs: [
+      { name: 'page_url', description: 'The URL of the deployed GitHub Pages site' },
+    ],
+  },
+  'upload-pages-artifact': {
+    name: 'Upload Pages Artifact',
+    description: 'Package a directory as a tar.gz archive and upload it as a GitHub Actions artifact named "github-pages" for use with deploy-pages-api. Automatically creates .nojekyll if not present. Drop-in replacement for actions/upload-pages-artifact.',
+    badge: 'Deployment',
+    badgeColor: 'badge-orange',
+    usage: `# Upload dist/ for Pages deployment
+- uses: asymmetric-effort/actions/actions/upload-pages-artifact@v1
+  with:
+    path: ./dist
+
+# With custom retention
+- uses: asymmetric-effort/actions/actions/upload-pages-artifact@v1
+  with:
+    path: ./build
+    retention-days: "3"`,
+    inputs: [
+      { name: 'path', description: 'Directory containing static files to deploy', required: false, default: '.' },
+      { name: 'retention-days', description: 'Number of days to retain the artifact', required: false, default: '1' },
+    ],
+    outputs: [
+      { name: 'artifact-id', description: 'The ID of the uploaded artifact' },
+    ],
+  },
+  'codeql-init': {
+    name: 'CodeQL Init',
+    description: 'Initialize CodeQL databases for security analysis. Downloads the CodeQL CLI, creates databases for specified languages, and prepares the environment for autobuild and analysis. Replaces github/codeql-action/init.',
+    badge: 'Security',
+    badgeColor: 'badge-purple',
+    usage: `# Initialize for Go
+- uses: asymmetric-effort/actions/actions/codeql-init@v1
+  with:
+    languages: "go"
+
+# Multiple languages
+- uses: asymmetric-effort/actions/actions/codeql-init@v1
+  with:
+    languages: "go,javascript"`,
+    inputs: [
+      { name: 'languages', description: 'Comma-separated languages to analyze (e.g., go,javascript)', required: true },
+      { name: 'config-file', description: 'Path to CodeQL configuration file', required: false },
+      { name: 'queries', description: 'Additional query packs or suites', required: false },
+      { name: 'tools', description: 'CodeQL CLI version (latest or specific)', required: false, default: 'latest' },
+      { name: 'token', description: 'GitHub token for downloading CodeQL CLI', required: false, default: '${{ github.token }}' },
+    ],
+    outputs: [
+      { name: 'codeql-path', description: 'Path to the CodeQL CLI binary' },
+    ],
+  },
+  'codeql-autobuild': {
+    name: 'CodeQL Autobuild',
+    description: 'Auto-detect the build system and compile the project for CodeQL analysis. Supports Go, JavaScript/TypeScript, Java (Maven/Gradle), C/C++ (CMake/Make), C# (.NET), and Swift. Replaces github/codeql-action/autobuild.',
+    badge: 'Security',
+    badgeColor: 'badge-purple',
+    usage: `# Auto-detect build system
+- uses: asymmetric-effort/actions/actions/codeql-autobuild@v1
+
+# Specify language
+- uses: asymmetric-effort/actions/actions/codeql-autobuild@v1
+  with:
+    language: "go"
+
+# Custom build command
+- uses: asymmetric-effort/actions/actions/codeql-autobuild@v1
+  with:
+    build-command: "make release"`,
+    inputs: [
+      { name: 'language', description: 'Language to build (if empty, builds all initialized)', required: false },
+      { name: 'build-command', description: 'Custom build command instead of auto-detection', required: false },
+    ],
+    outputs: [],
+  },
+  'codeql-analyze': {
+    name: 'CodeQL Analyze',
+    description: 'Run CodeQL queries against built databases and upload SARIF results to GitHub Code Scanning. Supports result categorization, local output, and automatic upload. Replaces github/codeql-action/analyze.',
+    badge: 'Security',
+    badgeColor: 'badge-purple',
+    usage: `# Basic analysis with upload
+- uses: asymmetric-effort/actions/actions/codeql-analyze@v1
+
+# With category and local output
+- uses: asymmetric-effort/actions/actions/codeql-analyze@v1
+  with:
+    category: "/language:go"
+    output: "./sarif-results"
+
+# Analysis without upload
+- uses: asymmetric-effort/actions/actions/codeql-analyze@v1
+  with:
+    upload: "false"
+    output: "./sarif-results"`,
+    inputs: [
+      { name: 'category', description: 'Category for SARIF upload (distinguishes multiple analyses)', required: false },
+      { name: 'output', description: 'Directory to write SARIF output files', required: false },
+      { name: 'upload', description: 'Upload SARIF results to GitHub Code Scanning', required: false, default: 'true' },
+      { name: 'token', description: 'GitHub token for uploading results', required: false, default: '${{ github.token }}' },
+    ],
+    outputs: [
+      { name: 'sarif-output', description: 'Path to the directory containing SARIF files' },
     ],
   },
 };
