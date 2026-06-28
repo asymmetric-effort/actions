@@ -10,7 +10,7 @@
     "test:pdv": "playwright test --config playwright.pdv.config.ts"
   },
   "dependencies": {
-    "@asymmetric-effort/specifyjs": "^0.2.163"
+    "@asymmetric-effort/specifyjs": "^0.2.167"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
