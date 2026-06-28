@@ -1,0 +1,54 @@
+name: "Configure Pages"
+description: "Configure GitHub Pages and output site URL metadata"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "settings"
+  color: "blue"
+
+inputs:
+  token:
+    description: "GitHub token with Pages permissions"
+    required: false
+    default: ${{ github.token }}
+  enablement:
+    description: "Whether to enable Pages if not already enabled"
+    required: false
+    default: "true"
+  static_site_generator:
+    description: "SSG being used (next, nuxt, gatsby, sveltekit)"
+    required: false
+    default: ""
+
+outputs:
+  base_url:
+    description: "Full base URL for the Pages site"
+    value: ${{ steps.configure.outputs.base_url }}
+  origin:
+    description: "Protocol and host of the Pages site"
+    value: ${{ steps.configure.outputs.origin }}
+  host:
+    description: "Hostname of the Pages site"
+    value: ${{ steps.configure.outputs.host }}
+  base_path:
+    description: "Base path component (e.g., /repo-name for project sites, / for user sites)"
+    value: ${{ steps.configure.outputs.base_path }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure Pages
+      id: configure
+      shell: bash
+      env:
+        INPUT_TOKEN: ${{ inputs.token }}
+        INPUT_ENABLEMENT: ${{ inputs.enablement }}
+        INPUT_STATIC_SITE_GENERATOR: ${{ inputs.static_site_generator }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_API_URL: ${{ github.api_url }}
+        GITHUB_WORKSPACE: ${{ github.workspace }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/parse-url.sh"
+        source "${GITHUB_ACTION_PATH}/scripts/configure.sh"
+        configure_pages
