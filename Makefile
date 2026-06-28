@@ -26,6 +26,9 @@ lint:
 	@shellcheck actions/codeql-init/scripts/*.sh
 	@shellcheck actions/codeql-autobuild/scripts/*.sh
 	@shellcheck actions/codeql-analyze/scripts/*.sh
+	@shellcheck actions/upload-artifact/scripts/*.sh
+	@shellcheck actions/download-artifact/scripts/*.sh
+	@shellcheck actions/configure-pages/scripts/*.sh
 	@shellcheck tests/test-harness.sh
 	@shellcheck tests/setup-bun/*.sh
 	@shellcheck tests/gh-release/*.sh
@@ -43,6 +46,9 @@ lint:
 	@shellcheck tests/upload-pages-artifact/*.sh
 	@shellcheck tests/deploy-pages-api/*.sh
 	@shellcheck tests/codeql/*.sh
+	@shellcheck tests/upload-artifact/*.sh
+	@shellcheck tests/download-artifact/*.sh
+	@shellcheck tests/configure-pages/*.sh
 	@shellcheck tests/run-all.sh
 	@echo "All lint checks passed."
 

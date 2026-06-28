@@ -33,7 +33,7 @@ test.describe('Home page', () => {
   test('renders action cards for all actions', async ({ page }) => {
     const cards = page.locator('.action-card');
     const count = await cards.count();
-    expect(count).toBeGreaterThanOrEqual(16);
+    expect(count).toBeGreaterThanOrEqual(19);
   });
 
   test('action cards have correct names', async ({ page }) => {
@@ -54,6 +54,9 @@ test.describe('Home page', () => {
     expect(cardTexts).toContain('CodeQL Init');
     expect(cardTexts).toContain('CodeQL Autobuild');
     expect(cardTexts).toContain('CodeQL Analyze');
+    expect(cardTexts).toContain('Upload Artifact');
+    expect(cardTexts).toContain('Download Artifact');
+    expect(cardTexts).toContain('Configure Pages');
   });
 
   test('action cards have category badges', async ({ page }) => {

@@ -27,6 +27,9 @@ const actions: Record<string, { name: string; desc: string; inputs: string[]; ou
   'codeql-init': { name: 'CodeQL Init', desc: 'Initialize CodeQL databases for security analysis.', inputs: ['languages', 'config-file', 'queries', 'tools', 'token'], outputs: ['codeql-path'] },
   'codeql-autobuild': { name: 'CodeQL Autobuild', desc: 'Auto-detect and build the project for CodeQL analysis.', inputs: ['language', 'build-command'], outputs: [] },
   'codeql-analyze': { name: 'CodeQL Analyze', desc: 'Run CodeQL analysis and upload SARIF results to GitHub Code Scanning.', inputs: ['category', 'output', 'upload', 'token'], outputs: ['sarif-output'] },
+  'upload-artifact': { name: 'Upload Artifact', desc: 'Upload build artifacts from a workflow run with glob support and compression.', inputs: ['name', 'path', 'retention-days', 'if-no-files-found', 'compression-level', 'overwrite'], outputs: ['artifact-id', 'artifact-url'] },
+  'download-artifact': { name: 'Download Artifact', desc: 'Download artifacts from a workflow run with cross-run and merge support.', inputs: ['name', 'path', 'merge-multiple', 'run-id', 'github-token'], outputs: ['download-path'] },
+  'configure-pages': { name: 'Configure Pages', desc: 'Configure GitHub Pages and output site URL metadata for deployment workflows.', inputs: ['token', 'enablement', 'static_site_generator'], outputs: ['base_url', 'origin', 'host', 'base_path'] },
 };
 
 function actionHtml(slug: string): string {

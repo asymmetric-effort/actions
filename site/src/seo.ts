@@ -165,6 +165,21 @@ export const routeMeta: Record<string, PageMeta> = {
     description: 'Run CodeQL analysis and upload SARIF results to GitHub Code Scanning. Replaces github/codeql-action/analyze.',
     canonical: `${SITE_URL}/#codeql-analyze`,
   },
+  'upload-artifact': {
+    title: 'Upload Artifact',
+    description: 'Upload build artifacts from a workflow run with glob patterns, compression control, and retention settings. Replaces actions/upload-artifact.',
+    canonical: `${SITE_URL}/#upload-artifact`,
+  },
+  'download-artifact': {
+    title: 'Download Artifact',
+    description: 'Download artifacts from a workflow run with cross-run and merge-multiple support. Replaces actions/download-artifact.',
+    canonical: `${SITE_URL}/#download-artifact`,
+  },
+  'configure-pages': {
+    title: 'Configure Pages',
+    description: 'Configure GitHub Pages and output site URL metadata for deployment workflows. Replaces actions/configure-pages.',
+    canonical: `${SITE_URL}/#configure-pages`,
+  },
   'security': {
     title: 'Security',
     description: 'Security best practices for using Asymmetric Effort GitHub Actions. Handling secrets, token permissions, and version pinning.',

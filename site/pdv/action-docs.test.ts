@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const actionSlugs = ['checkout', 'setup-bun', 'setup-go', 'setup-node', 'setup-python', 'fossa-scan', 'gh-release', 'deploy-pages-api', 'upload-pages-artifact', 'codeql-init', 'codeql-autobuild', 'codeql-analyze'] as const;
+const actionSlugs = ['checkout', 'setup-bun', 'setup-go', 'setup-node', 'setup-python', 'fossa-scan', 'gh-release', 'deploy-pages-api', 'upload-pages-artifact', 'codeql-init', 'codeql-autobuild', 'codeql-analyze', 'upload-artifact', 'download-artifact', 'configure-pages'] as const;
 
 for (const slug of actionSlugs) {
   test.describe(`${slug} documentation page`, () => {

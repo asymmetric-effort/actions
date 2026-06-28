@@ -8,11 +8,11 @@ import { SecurityPage } from './components/SecurityPage';
 import { Footer } from './components/Footer';
 import { setPageMeta, routeMeta } from './seo';
 
-export type Route = 'home' | 'setup-bun' | 'fossa-scan' | 'gh-release' | 'go-tooling' | 'build-pkg-rpm' | 'build-pkg-deb' | 'npm-publish' | 'release' | 'deploy-pages' | 'checkout' | 'setup-go' | 'setup-node' | 'setup-python' | 'upload-pages-artifact' | 'deploy-pages-api' | 'codeql-init' | 'codeql-autobuild' | 'codeql-analyze' | 'security';
+export type Route = 'home' | 'setup-bun' | 'fossa-scan' | 'gh-release' | 'go-tooling' | 'build-pkg-rpm' | 'build-pkg-deb' | 'npm-publish' | 'release' | 'deploy-pages' | 'checkout' | 'setup-go' | 'setup-node' | 'setup-python' | 'upload-pages-artifact' | 'deploy-pages-api' | 'codeql-init' | 'codeql-autobuild' | 'codeql-analyze' | 'upload-artifact' | 'download-artifact' | 'configure-pages' | 'security';
 
 function getRoute(): Route {
   const hash = window.location.hash.replace('#', '') || 'home';
-  const valid: Route[] = ['home', 'setup-bun', 'fossa-scan', 'gh-release', 'go-tooling', 'build-pkg-rpm', 'build-pkg-deb', 'npm-publish', 'release', 'deploy-pages', 'checkout', 'setup-go', 'setup-node', 'setup-python', 'upload-pages-artifact', 'deploy-pages-api', 'codeql-init', 'codeql-autobuild', 'codeql-analyze', 'security'];
+  const valid: Route[] = ['home', 'setup-bun', 'fossa-scan', 'gh-release', 'go-tooling', 'build-pkg-rpm', 'build-pkg-deb', 'npm-publish', 'release', 'deploy-pages', 'checkout', 'setup-go', 'setup-node', 'setup-python', 'upload-pages-artifact', 'deploy-pages-api', 'codeql-init', 'codeql-autobuild', 'codeql-analyze', 'upload-artifact', 'download-artifact', 'configure-pages', 'security'];
   return valid.includes(hash as Route) ? (hash as Route) : 'home';
 }
 
@@ -36,6 +36,9 @@ function renderContent(route: Route): ReturnType<typeof createElement> {
     case 'codeql-init':
     case 'codeql-autobuild':
     case 'codeql-analyze':
+    case 'upload-artifact':
+    case 'download-artifact':
+    case 'configure-pages':
       return createElement(ActionDocs, { slug: route });
     case 'security':
       return createElement(SecurityPage, null);
