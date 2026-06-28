@@ -1,0 +1,64 @@
+name: "Download Artifact"
+description: "Download artifacts from a workflow run"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "download-cloud"
+  color: "blue"
+
+inputs:
+  name:
+    description: "Name of the artifact to download"
+    required: true
+  path:
+    description: "Directory to extract the artifact into"
+    required: false
+    default: "."
+  merge-multiple:
+    description: "Merge multiple artifacts into the target directory"
+    required: false
+    default: "false"
+  run-id:
+    description: "Workflow run ID (defaults to the current run)"
+    required: false
+    default: ""
+  github-token:
+    description: "GitHub token for authentication"
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  download-path:
+    description: "Absolute path where the artifact was downloaded"
+    value: ${{ steps.download.outputs.download-path }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate inputs
+      id: validate
+      shell: bash
+      env:
+        INPUT_NAME: ${{ inputs.name }}
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_MERGE_MULTIPLE: ${{ inputs.merge-multiple }}
+        INPUT_RUN_ID: ${{ inputs.run-id }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/validate.sh"
+        validate_download_inputs
+
+    - name: Download and extract artifact
+      id: download
+      shell: bash
+      env:
+        INPUT_NAME: ${{ inputs.name }}
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_MERGE_MULTIPLE: ${{ inputs.merge-multiple }}
+        INPUT_RUN_ID: ${{ inputs.run-id }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        set -euo pipefail
+        source "${GITHUB_ACTION_PATH}/scripts/download.sh"
+        download_artifact
