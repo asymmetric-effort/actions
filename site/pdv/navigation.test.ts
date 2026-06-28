@@ -9,7 +9,7 @@ test.describe('Navigation', () => {
   test('renders all navigation links', async ({ page }) => {
     const navLinks = page.locator('.nav-link');
     const count = await navLinks.count();
-    expect(count).toBeGreaterThanOrEqual(18);
+    expect(count).toBeGreaterThanOrEqual(21);
 
     const labels = await navLinks.allTextContents();
     expect(labels).toContain('Home');
@@ -30,6 +30,9 @@ test.describe('Navigation', () => {
     expect(labels).toContain('codeql-init');
     expect(labels).toContain('codeql-autobuild');
     expect(labels).toContain('codeql-analyze');
+    expect(labels).toContain('upload-artifact');
+    expect(labels).toContain('download-artifact');
+    expect(labels).toContain('configure-pages');
     expect(labels).toContain('Security');
   });
 

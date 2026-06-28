@@ -22,6 +22,9 @@ const expectedRoutes = [
   { slug: 'codeql-init', path: '/#codeql-init' },
   { slug: 'codeql-autobuild', path: '/#codeql-autobuild' },
   { slug: 'codeql-analyze', path: '/#codeql-analyze' },
+  { slug: 'upload-artifact', path: '/#upload-artifact' },
+  { slug: 'download-artifact', path: '/#download-artifact' },
+  { slug: 'configure-pages', path: '/#configure-pages' },
   { slug: 'security', path: '/#security' },
 ];
 
@@ -170,6 +173,9 @@ test.describe('SEO meta tags', () => {
     expect(noscript).toContain('codeql-init');
     expect(noscript).toContain('codeql-autobuild');
     expect(noscript).toContain('codeql-analyze');
+    expect(noscript).toContain('upload-artifact');
+    expect(noscript).toContain('download-artifact');
+    expect(noscript).toContain('configure-pages');
     expect(noscript).toContain('security');
   });
 });

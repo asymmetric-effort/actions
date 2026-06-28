@@ -115,6 +115,27 @@ const cards: CardInfo[] = [
     badgeColor: 'badge-orange',
   },
   {
+    slug: 'configure-pages',
+    name: 'Configure Pages',
+    desc: 'Configure GitHub Pages and output site URL metadata for deployment workflows.',
+    badge: 'Deployment',
+    badgeColor: 'badge-blue',
+  },
+  {
+    slug: 'upload-artifact',
+    name: 'Upload Artifact',
+    desc: 'Upload build artifacts from a workflow run with glob support and compression.',
+    badge: 'Core',
+    badgeColor: 'badge-blue',
+  },
+  {
+    slug: 'download-artifact',
+    name: 'Download Artifact',
+    desc: 'Download artifacts from a workflow run with cross-run and merge support.',
+    badge: 'Core',
+    badgeColor: 'badge-blue',
+  },
+  {
     slug: 'codeql-init',
     name: 'CodeQL Init',
     desc: 'Initialize CodeQL databases for security analysis. Supports multiple languages.',

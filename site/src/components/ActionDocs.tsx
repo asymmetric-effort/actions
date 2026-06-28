@@ -636,6 +636,107 @@ const actions: Record<string, ActionData> = {
       { name: 'sarif-output', description: 'Path to the directory containing SARIF files' },
     ],
   },
+  'upload-artifact': {
+    name: 'Upload Artifact',
+    description: 'Upload build artifacts from a workflow run. Supports glob patterns, compression control, retention settings, and overwrite. Drop-in replacement for actions/upload-artifact.',
+    badge: 'Core',
+    badgeColor: 'badge-blue',
+    usage: `# Upload build output
+- uses: asymmetric-effort/actions/actions/upload-artifact@v1
+  with:
+    name: dist
+    path: dist/
+
+# Upload with retention
+- uses: asymmetric-effort/actions/actions/upload-artifact@v1
+  with:
+    name: coverage
+    path: coverage/
+    retention-days: "7"
+
+# Upload multiple paths
+- uses: asymmetric-effort/actions/actions/upload-artifact@v1
+  with:
+    name: build-artifacts
+    path: |
+      dist/*.tar.gz
+      dist/*.zip`,
+    inputs: [
+      { name: 'name', description: 'Name of the artifact to upload', required: true },
+      { name: 'path', description: 'File, directory, or wildcard pattern for files to upload', required: true },
+      { name: 'retention-days', description: 'Number of days to retain the artifact (1-90)', required: false },
+      { name: 'if-no-files-found', description: 'Behavior when no files found (warn, error, ignore)', required: false, default: 'warn' },
+      { name: 'compression-level', description: 'Compression level for zlib (0-9)', required: false, default: '6' },
+      { name: 'overwrite', description: 'Overwrite existing artifact with same name', required: false, default: 'false' },
+    ],
+    outputs: [
+      { name: 'artifact-id', description: 'The ID of the uploaded artifact' },
+      { name: 'artifact-url', description: 'The URL to download the artifact' },
+    ],
+  },
+  'download-artifact': {
+    name: 'Download Artifact',
+    description: 'Download artifacts from a workflow run. Supports downloading from the current or a specified run, with optional merge of multiple artifacts. Drop-in replacement for actions/download-artifact.',
+    badge: 'Core',
+    badgeColor: 'badge-blue',
+    usage: `# Download a named artifact
+- uses: asymmetric-effort/actions/actions/download-artifact@v1
+  with:
+    name: dist
+    path: dist/
+
+# Download from a different run
+- uses: asymmetric-effort/actions/actions/download-artifact@v1
+  with:
+    name: build-output
+    run-id: "12345678"
+
+# Merge multiple artifacts
+- uses: asymmetric-effort/actions/actions/download-artifact@v1
+  with:
+    name: coverage-*
+    path: coverage/
+    merge-multiple: "true"`,
+    inputs: [
+      { name: 'name', description: 'Name of the artifact to download', required: true },
+      { name: 'path', description: 'Directory to extract the artifact into', required: false, default: '.' },
+      { name: 'merge-multiple', description: 'Merge multiple matching artifacts into target directory', required: false, default: 'false' },
+      { name: 'run-id', description: 'Workflow run ID to download from (defaults to current)', required: false },
+      { name: 'github-token', description: 'Token for authentication', required: false, default: '${{ github.token }}' },
+    ],
+    outputs: [
+      { name: 'download-path', description: 'Absolute path where the artifact was downloaded' },
+    ],
+  },
+  'configure-pages': {
+    name: 'Configure Pages',
+    description: 'Configure GitHub Pages and output site URL metadata. Enables Pages via the API if needed, parses the site URL into components, and creates .nojekyll for static site generators. Drop-in replacement for actions/configure-pages.',
+    badge: 'Deployment',
+    badgeColor: 'badge-blue',
+    usage: `# Basic configuration
+- uses: asymmetric-effort/actions/actions/configure-pages@v1
+
+# With static site generator
+- uses: asymmetric-effort/actions/actions/configure-pages@v1
+  with:
+    static_site_generator: "next"
+
+# Without auto-enablement
+- uses: asymmetric-effort/actions/actions/configure-pages@v1
+  with:
+    enablement: "false"`,
+    inputs: [
+      { name: 'token', description: 'GitHub token with Pages permissions', required: false, default: '${{ github.token }}' },
+      { name: 'enablement', description: 'Enable Pages if not already enabled', required: false, default: 'true' },
+      { name: 'static_site_generator', description: 'SSG being used (next, nuxt, gatsby, sveltekit)', required: false },
+    ],
+    outputs: [
+      { name: 'base_url', description: 'Full base URL for the Pages site' },
+      { name: 'origin', description: 'Protocol + host of the Pages site' },
+      { name: 'host', description: 'Hostname of the Pages site' },
+      { name: 'base_path', description: 'Base path component of the Pages URL' },
+    ],
+  },
 };
 
 function InputsTable(props: { inputs: ActionInput[] }): ReturnType<typeof createElement> {
