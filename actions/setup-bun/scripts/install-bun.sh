@@ -81,6 +81,17 @@ configure_bun() {
   local bun_path="$1"
   local install_dir="$2"
 
+  # Create bunx symlink if it doesn't exist (bunx is bun in disguise)
+  if [[ ! -f "${install_dir}/bunx" && ! -f "${install_dir}/bunx.exe" ]]; then
+    if [[ -f "${install_dir}/bun" ]]; then
+      ln -sf bun "${install_dir}/bunx"
+      echo "::notice::Created bunx symlink"
+    elif [[ -f "${install_dir}/bun.exe" ]]; then
+      ln -sf bun.exe "${install_dir}/bunx.exe"
+      echo "::notice::Created bunx.exe symlink"
+    fi
+  fi
+
   echo "${install_dir}" >> "${GITHUB_PATH}"
   echo "::notice::Added ${install_dir} to PATH"
 
