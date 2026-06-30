@@ -13,70 +13,134 @@ jobs:
   poll:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - name: Discover and create tracking issues
+      - name: Poll org repos for supply chain requests
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.SUPPLY_CHAIN_TOKEN }}
         run: |
           set -euo pipefail
 
           ORG="asymmetric-effort"
           THIS_REPO="${ORG}/actions"
+          LABEL="github-action-request"
 
-          echo "Searching for supply chain requests across ${ORG}..."
+          echo "Discovering repositories in ${ORG}..."
 
-          # Search for open issues with the title pattern across all org repos.
-          ISSUES=$(gh search issues \
-            --owner "$ORG" \
-            --state open \
-            "supply-chain: create first-party replacement" \
-            --json repository,title,number,url \
-            --jq '.[] | select(.repository.nameWithOwner != "'"$THIS_REPO"'")' \
-            2>/dev/null || echo "")
+          # Dynamically discover all org repos.
+          REPOS=$(gh repo list "$ORG" --no-archived --json nameWithOwner --jq '.[].nameWithOwner' 2>/dev/null || echo "")
 
-          if [ -z "$ISSUES" ]; then
-            echo "No supply chain requests found"
+          if [ -z "$REPOS" ]; then
+            echo "No repositories found"
             exit 0
           fi
 
-          echo "$ISSUES" | jq -c '.' | while IFS= read -r issue; do
-            SOURCE_REPO=$(echo "$issue" | jq -r '.repository.nameWithOwner')
-            TITLE=$(echo "$issue" | jq -r '.title')
-            NUMBER=$(echo "$issue" | jq -r '.number')
-            URL=$(echo "$issue" | jq -r '.url')
+          REPO_COUNT=$(echo "$REPOS" | wc -l)
+          echo "Found ${REPO_COUNT} repositories"
 
-            # Extract the action name from the title.
-            ACTION=$(echo "$TITLE" | grep -oP 'replacement for `\K[^`]+' || echo "")
-            if [ -z "$ACTION" ]; then
-              echo "Could not parse action from: $TITLE"
-              continue
-            fi
+          # Ensure the label exists in this repo.
+          if ! gh label list --repo "$THIS_REPO" --json name --jq '.[].name' 2>/dev/null | grep -qx "$LABEL"; then
+            echo "Creating label '${LABEL}' in ${THIS_REPO}"
+            gh label create "$LABEL" \
+              --repo "$THIS_REPO" \
+              --description "Request to replace a third-party GitHub Action with an internal action" \
+              --color "d93f0b" 2>/dev/null || true
+          fi
 
-            ACTION_NAME=$(basename "$ACTION")
-            LOCAL_TITLE="supply-chain: create \`${ACTION_NAME}\` action (requested by ${SOURCE_REPO}#${NUMBER})"
+          CREATED=0
 
-            # Deduplicate.
-            EXISTING=$(gh issue list --repo "$THIS_REPO" --state open --search "$LOCAL_TITLE" --json number --jq 'length' 2>/dev/null || echo "0")
-            if [ "$EXISTING" -gt 0 ]; then
-              echo "Tracking issue already exists for $ACTION_NAME, skipping"
-              continue
-            fi
+          # Scan each repo for issues with the github-action-request label.
+          echo "$REPOS" | while IFS= read -r repo; do
+            # Skip this repo.
+            [ "$repo" = "$THIS_REPO" ] && continue
 
-            echo "Creating tracking issue for $ACTION_NAME..."
-            gh issue create --repo "$THIS_REPO" \
-              --title "$LOCAL_TITLE" \
-              --body "## New Action Request
+            echo "Scanning ${repo} for ${LABEL} issues..."
 
-          A first-party replacement has been requested for \`${ACTION}\`.
+            ISSUES=$(gh issue list \
+              --repo "$repo" \
+              --state open \
+              --label "$LABEL" \
+              --json number,title,url,body \
+              --jq '.[]' 2>/dev/null || echo "")
 
-          **Requested by:** ${SOURCE_REPO}#${NUMBER}
-          **Source issue:** ${URL}
-          **Action to create:** \`actions/${ACTION_NAME}/action.yml\`
+            [ -z "$ISSUES" ] && continue
 
-          Once this action is implemented, the requesting repo will be notified
-          via the supply chain audit on its next run." \
-              --label "enhancement" 2>/dev/null || echo "Failed to create issue (label may not exist)"
+            echo "$ISSUES" | jq -c '.' | while IFS= read -r issue; do
+              ISSUE_NUMBER=$(echo "$issue" | jq -r '.number')
+              ISSUE_TITLE=$(echo "$issue" | jq -r '.title')
+              ISSUE_URL=$(echo "$issue" | jq -r '.url')
+              ISSUE_BODY=$(echo "$issue" | jq -r '.body')
+
+              # Extract the third-party action path from the issue body or title.
+              # Try body first (more reliable), then title.
+              ACTION_PATH=""
+              ACTION_PATH=$(echo "$ISSUE_BODY" | grep -oP 'Third-party action:\*\* `\K[^`]+' 2>/dev/null || true)
+              if [ -z "$ACTION_PATH" ]; then
+                ACTION_PATH=$(echo "$ISSUE_TITLE" | grep -oP 'Replace `\K[^`]+' 2>/dev/null || true)
+              fi
+
+              if [ -z "$ACTION_PATH" ]; then
+                echo "  Could not extract action path from ${repo}#${ISSUE_NUMBER}, skipping"
+                continue
+              fi
+
+              # Extract upstream URL from body if available.
+              UPSTREAM_URL=""
+              UPSTREAM_URL=$(echo "$ISSUE_BODY" | grep -oP 'Upstream:\*\* \K\S+' 2>/dev/null || true)
+              if [ -z "$UPSTREAM_URL" ]; then
+                UPSTREAM_URL="https://github.com/${ACTION_PATH}"
+              fi
+
+              # Extract workflow URL from body if available.
+              WORKFLOW_URL=""
+              WORKFLOW_URL=$(echo "$ISSUE_BODY" | grep -oP 'Source workflow:\*\* \[\K[^\]]+' 2>/dev/null || true)
+
+              # Build the tracking issue title.
+              LOCAL_TITLE="Replace \`${ACTION_PATH}\` with internal action"
+
+              # Check if a tracking issue already exists in this repo.
+              EXISTING=$(gh issue list \
+                --repo "$THIS_REPO" \
+                --state open \
+                --label "$LABEL" \
+                --search "Replace \`${ACTION_PATH}\`" \
+                --json number \
+                --jq 'length' 2>/dev/null || echo "0")
+
+              if [ "$EXISTING" -gt 0 ]; then
+                echo "  Tracking issue already exists for ${ACTION_PATH}, skipping"
+                continue
+              fi
+
+              # Build the issue body.
+              BODY="## Internal Action Request
+
+          A company repository has requested a replacement for a third-party GitHub Action.
+
+          **Third-party action:** \`${ACTION_PATH}\`
+          **Upstream:** ${UPSTREAM_URL}
+          **Requested by:** [${repo}#${ISSUE_NUMBER}](${ISSUE_URL})"
+
+              if [ -n "$WORKFLOW_URL" ]; then
+                BODY="${BODY}
+          **Source workflow:** ${WORKFLOW_URL}"
+              fi
+
+              BODY="${BODY}
+
+          Create an internal composite action to replace this third-party dependency.
+          Once implemented, update the requesting repository's workflows to use the new action."
+
+              echo "  Creating tracking issue for ${ACTION_PATH}..."
+              gh issue create \
+                --repo "$THIS_REPO" \
+                --title "$LOCAL_TITLE" \
+                --body "$BODY" \
+                --label "$LABEL" 2>/dev/null || echo "  Failed to create issue for ${ACTION_PATH}"
+
+              CREATED=$((CREATED + 1))
+            done
           done
 
+          echo ""
           echo "Poll complete"
