@@ -1,0 +1,82 @@
+name: Poll Supply Chain Requests
+
+on:
+  schedule:
+    - cron: "0 7 * * *" # Daily at 07:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Discover and create tracking issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          ORG="asymmetric-effort"
+          THIS_REPO="${ORG}/actions"
+
+          echo "Searching for supply chain requests across ${ORG}..."
+
+          # Search for open issues with the title pattern across all org repos.
+          ISSUES=$(gh search issues \
+            --owner "$ORG" \
+            --state open \
+            "supply-chain: create first-party replacement" \
+            --json repository,title,number,url \
+            --jq '.[] | select(.repository.nameWithOwner != "'"$THIS_REPO"'")' \
+            2>/dev/null || echo "")
+
+          if [ -z "$ISSUES" ]; then
+            echo "No supply chain requests found"
+            exit 0
+          fi
+
+          echo "$ISSUES" | jq -c '.' | while IFS= read -r issue; do
+            SOURCE_REPO=$(echo "$issue" | jq -r '.repository.nameWithOwner')
+            TITLE=$(echo "$issue" | jq -r '.title')
+            NUMBER=$(echo "$issue" | jq -r '.number')
+            URL=$(echo "$issue" | jq -r '.url')
+
+            # Extract the action name from the title.
+            ACTION=$(echo "$TITLE" | grep -oP 'replacement for `\K[^`]+' || echo "")
+            if [ -z "$ACTION" ]; then
+              echo "Could not parse action from: $TITLE"
+              continue
+            fi
+
+            ACTION_NAME=$(basename "$ACTION")
+            LOCAL_TITLE="supply-chain: create \`${ACTION_NAME}\` action (requested by ${SOURCE_REPO}#${NUMBER})"
+
+            # Deduplicate.
+            EXISTING=$(gh issue list --repo "$THIS_REPO" --state open --search "$LOCAL_TITLE" --json number --jq 'length' 2>/dev/null || echo "0")
+            if [ "$EXISTING" -gt 0 ]; then
+              echo "Tracking issue already exists for $ACTION_NAME, skipping"
+              continue
+            fi
+
+            echo "Creating tracking issue for $ACTION_NAME..."
+            gh issue create --repo "$THIS_REPO" \
+              --title "$LOCAL_TITLE" \
+              --body "## New Action Request
+
+          A first-party replacement has been requested for \`${ACTION}\`.
+
+          **Requested by:** ${SOURCE_REPO}#${NUMBER}
+          **Source issue:** ${URL}
+          **Action to create:** \`actions/${ACTION_NAME}/action.yml\`
+
+          Once this action is implemented, the requesting repo will be notified
+          via the supply chain audit on its next run." \
+              --label "enhancement" 2>/dev/null || echo "Failed to create issue (label may not exist)"
+          done
+
+          echo "Poll complete"

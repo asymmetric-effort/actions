@@ -1,0 +1,305 @@
+name: "Audit Supply Chain"
+description: "Scan workflows for third-party GitHub Actions and report supply chain risks"
+author: "Asymmetric Effort, LLC"
+
+branding:
+  icon: "shield"
+  color: "red"
+
+inputs:
+  actions-repo:
+    description: "Org repo containing first-party actions (e.g., asymmetric-effort/actions)"
+    required: false
+    default: "asymmetric-effort/actions"
+  well-known-orgs:
+    description: "Comma-separated list of well-known action orgs (lower severity)"
+    required: false
+    default: "actions,github,azure,aws-actions,google-github-actions,docker,hashicorp,Homebrew"
+  create-issues:
+    description: "Create issues for findings (true/false)"
+    required: false
+    default: "true"
+  token:
+    description: "GitHub token for API access and issue creation"
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  findings-count:
+    description: "Number of third-party action findings"
+    value: ${{ steps.audit.outputs.findings_count }}
+  critical-count:
+    description: "Number of critical severity findings"
+    value: ${{ steps.audit.outputs.critical_count }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Audit supply chain
+      id: audit
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        ACTIONS_REPO: ${{ inputs.actions-repo }}
+        WELL_KNOWN_ORGS: ${{ inputs.well-known-orgs }}
+        CREATE_ISSUES: ${{ inputs.create-issues }}
+        REPO: ${{ github.repository }}
+      run: |
+        set -euo pipefail
+
+        echo "## Supply Chain Audit" >> "$GITHUB_STEP_SUMMARY"
+        echo "" >> "$GITHUB_STEP_SUMMARY"
+
+        # ── Discover first-party actions ──
+        ACTIONS_ORG=$(echo "$ACTIONS_REPO" | cut -d/ -f1)
+        FIRST_PARTY=()
+        echo "Discovering first-party actions from $ACTIONS_REPO..."
+        DIRS=$(curl -sf "https://api.github.com/repos/${ACTIONS_REPO}/contents/actions" \
+          | jq -r '.[] | select(.type == "dir") | .name' 2>/dev/null || echo "")
+        for d in $DIRS; do
+          FIRST_PARTY+=("$d")
+        done
+        echo "Found ${#FIRST_PARTY[@]} first-party actions: ${FIRST_PARTY[*]}"
+
+        # ── Parse well-known orgs ──
+        IFS=',' read -ra KNOWN_ORGS <<< "$WELL_KNOWN_ORGS"
+
+        is_well_known() {
+          local org="$1"
+          for known in "${KNOWN_ORGS[@]}"; do
+            if [ "$(echo "$known" | xargs)" = "$org" ]; then
+              return 0
+            fi
+          done
+          return 1
+        }
+
+        is_sha_pinned() {
+          local ref="$1"
+          # SHA refs are 40 hex characters.
+          if [[ "$ref" =~ ^[0-9a-f]{40}$ ]]; then
+            return 0
+          fi
+          return 1
+        }
+
+        has_first_party_replacement() {
+          local action_name="$1"
+          for fp in "${FIRST_PARTY[@]}"; do
+            if [ "$fp" = "$action_name" ]; then
+              return 0
+            fi
+          done
+          return 1
+        }
+
+        # ── Scan workflows ──
+        FINDINGS=()
+        CRITICAL=0
+        HIGH=0
+        MEDIUM=0
+        LOW=0
+
+        for workflow in .github/workflows/*.yml .github/workflows/*.yaml; do
+          [ -f "$workflow" ] || continue
+          echo "Scanning $workflow..."
+
+          # Extract 'uses:' lines, skip local actions (./) and reusable workflows.
+          grep -oP '^\s*uses:\s*\K\S+' "$workflow" 2>/dev/null | while IFS= read -r action_ref; do
+            # Skip local actions.
+            [[ "$action_ref" == ./* ]] && continue
+
+            # Parse org/repo@ref.
+            ACTION_PATH="${action_ref%%@*}"
+            ACTION_REF="${action_ref##*@}"
+            ACTION_ORG="${ACTION_PATH%%/*}"
+            # Extract the action name (last path component).
+            ACTION_NAME=$(basename "$ACTION_PATH")
+
+            # Skip first-party actions.
+            if [ "$ACTION_ORG" = "$ACTIONS_ORG" ]; then
+              continue
+            fi
+
+            # Determine severity.
+            SEVERITY=""
+            if is_well_known "$ACTION_ORG"; then
+              if is_sha_pinned "$ACTION_REF"; then
+                SEVERITY="low"
+                LOW=$((LOW + 1))
+              else
+                SEVERITY="medium"
+                MEDIUM=$((MEDIUM + 1))
+              fi
+            else
+              if is_sha_pinned "$ACTION_REF"; then
+                SEVERITY="high"
+                HIGH=$((HIGH + 1))
+              else
+                SEVERITY="critical"
+                CRITICAL=$((CRITICAL + 1))
+              fi
+            fi
+
+            # Check for first-party replacement.
+            REPLACEMENT=""
+            if has_first_party_replacement "$ACTION_NAME"; then
+              REPLACEMENT="${ACTIONS_REPO}/actions/${ACTION_NAME}"
+            fi
+
+            echo "  [$SEVERITY] $action_ref (replacement: ${REPLACEMENT:-none})"
+
+            # Store finding.
+            FINDINGS+=("${SEVERITY}|${action_ref}|${workflow}|${REPLACEMENT}|${ACTION_NAME}")
+          done
+        done
+
+        # ── Re-scan to build summary (subshell above loses variables) ──
+        TOTAL=0
+        CRITICAL=0
+        HIGH=0
+        MEDIUM=0
+        LOW=0
+
+        declare -A SEEN_ACTIONS
+        SUMMARY_LINES=()
+        MIGRATE_ACTIONS=()
+        REQUEST_ACTIONS=()
+
+        for workflow in .github/workflows/*.yml .github/workflows/*.yaml; do
+          [ -f "$workflow" ] || continue
+
+          grep -oP '^\s*uses:\s*\K\S+' "$workflow" 2>/dev/null | while IFS= read -r UNUSED; do true; done
+
+          while IFS= read -r action_ref; do
+            [[ "$action_ref" == ./* ]] && continue
+
+            ACTION_PATH="${action_ref%%@*}"
+            ACTION_REF="${action_ref##*@}"
+            ACTION_ORG="${ACTION_PATH%%/*}"
+            ACTION_NAME=$(basename "$ACTION_PATH")
+
+            [ "$ACTION_ORG" = "$ACTIONS_ORG" ] && continue
+
+            # Deduplicate by action path.
+            [ "${SEEN_ACTIONS[$ACTION_PATH]+_}" ] && continue
+            SEEN_ACTIONS[$ACTION_PATH]=1
+
+            if is_well_known "$ACTION_ORG"; then
+              if is_sha_pinned "$ACTION_REF"; then
+                SEVERITY="low"
+                LOW=$((LOW + 1))
+              else
+                SEVERITY="medium"
+                MEDIUM=$((MEDIUM + 1))
+              fi
+            else
+              if is_sha_pinned "$ACTION_REF"; then
+                SEVERITY="high"
+                HIGH=$((HIGH + 1))
+              else
+                SEVERITY="critical"
+                CRITICAL=$((CRITICAL + 1))
+              fi
+            fi
+
+            TOTAL=$((TOTAL + 1))
+
+            REPLACEMENT=""
+            if has_first_party_replacement "$ACTION_NAME"; then
+              REPLACEMENT="${ACTIONS_ORG}/actions/actions/${ACTION_NAME}"
+              MIGRATE_ACTIONS+=("${ACTION_PATH}|${REPLACEMENT}|${SEVERITY}")
+            else
+              REQUEST_ACTIONS+=("${ACTION_PATH}|${ACTION_NAME}|${SEVERITY}")
+            fi
+
+            ICON="🟢"
+            [ "$SEVERITY" = "medium" ] && ICON="🟡"
+            [ "$SEVERITY" = "high" ] && ICON="🟠"
+            [ "$SEVERITY" = "critical" ] && ICON="🔴"
+
+            REPL_TEXT="${REPLACEMENT:-*none*}"
+            SUMMARY_LINES+=("| ${ICON} ${SEVERITY} | \`${ACTION_PATH}\` | \`${ACTION_REF}\` | ${REPL_TEXT} |")
+
+          done < <(grep -oP '^\s*uses:\s*\K\S+' "$workflow" 2>/dev/null || true)
+        done
+
+        # ── Write summary ──
+        if [ "$TOTAL" -eq 0 ]; then
+          echo "No third-party actions found." >> "$GITHUB_STEP_SUMMARY"
+        else
+          echo "| Severity | Action | Ref | First-Party Replacement |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|----------|--------|-----|------------------------|" >> "$GITHUB_STEP_SUMMARY"
+          for line in "${SUMMARY_LINES[@]}"; do
+            echo "$line" >> "$GITHUB_STEP_SUMMARY"
+          done
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Total: ${TOTAL}** (critical: ${CRITICAL}, high: ${HIGH}, medium: ${MEDIUM}, low: ${LOW})" >> "$GITHUB_STEP_SUMMARY"
+        fi
+
+        # ── Create issues ──
+        if [ "$CREATE_ISSUES" = "true" ]; then
+
+          # Migration issues (first-party replacement exists).
+          for entry in "${MIGRATE_ACTIONS[@]+"${MIGRATE_ACTIONS[@]}"}"; do
+            [ -z "$entry" ] && continue
+            IFS='|' read -r ACTION REPLACEMENT SEVERITY <<< "$entry"
+            TITLE="supply-chain: migrate \`${ACTION}\` to \`${REPLACEMENT}\`"
+
+            # Deduplicate.
+            EXISTING=$(gh issue list --repo "$REPO" --state open --search "$TITLE" --json number --jq 'length' 2>/dev/null || echo "0")
+            if [ "$EXISTING" -gt 0 ]; then
+              echo "Issue already exists for $ACTION migration, skipping"
+              continue
+            fi
+
+            gh issue create --repo "$REPO" \
+              --title "$TITLE" \
+              --body "## Supply Chain Migration
+
+        A first-party replacement exists for \`${ACTION}\`.
+
+        **Current:** \`${ACTION}\`
+        **Replacement:** \`${REPLACEMENT}\`
+        **Severity:** ${SEVERITY}
+
+        Update all workflow files to use the first-party action to reduce supply chain risk." \
+              --label "supply-chain" 2>/dev/null || echo "Failed to create issue for $ACTION (label may not exist)"
+          done
+
+          # Request issues (no first-party replacement).
+          for entry in "${REQUEST_ACTIONS[@]+"${REQUEST_ACTIONS[@]}"}"; do
+            [ -z "$entry" ] && continue
+            IFS='|' read -r ACTION ACTION_NAME SEVERITY <<< "$entry"
+            TITLE="supply-chain: create first-party replacement for \`${ACTION}\`"
+
+            # Deduplicate.
+            EXISTING=$(gh issue list --repo "$REPO" --state open --search "$TITLE" --json number --jq 'length' 2>/dev/null || echo "0")
+            if [ "$EXISTING" -gt 0 ]; then
+              echo "Issue already exists for $ACTION request, skipping"
+              continue
+            fi
+
+            gh issue create --repo "$REPO" \
+              --title "$TITLE" \
+              --body "## First-Party Action Request
+
+        No first-party replacement exists for \`${ACTION}\`.
+
+        **Third-party action:** \`${ACTION}\`
+        **Suggested name:** \`${ACTIONS_REPO}/actions/${ACTION_NAME}\`
+        **Severity:** ${SEVERITY}
+        **Requesting repo:** ${REPO}
+
+        Create a first-party composite action in \`${ACTIONS_REPO}\` to replace this third-party dependency.
+        Once created, a migration issue will be opened on ${REPO} automatically." \
+              --label "supply-chain" 2>/dev/null || echo "Failed to create issue for $ACTION (label may not exist)"
+          done
+        fi
+
+        # ── Set outputs ──
+        echo "findings_count=$TOTAL" >> "$GITHUB_OUTPUT"
+        echo "critical_count=$CRITICAL" >> "$GITHUB_OUTPUT"
+
+        echo ""
+        echo "Audit complete: $TOTAL findings (critical=$CRITICAL high=$HIGH medium=$MEDIUM low=$LOW)"
