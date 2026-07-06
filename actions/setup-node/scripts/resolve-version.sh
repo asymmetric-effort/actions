@@ -180,6 +180,33 @@ resolve_lts_version() {
   return 1
 }
 
+# Resolve a partial version (major or major.minor) to the latest full version.
+# Queries the Node.js dist index.
+resolve_partial_version() {
+  local partial="$1"
+  local response
+
+  response="$(curl -fsSL "https://nodejs.org/dist/index.json" 2>/dev/null || true)"
+
+  if [[ -z "${response}" ]]; then
+    echo "::error::Failed to fetch Node.js dist index" >&2
+    return 1
+  fi
+
+  # Match the first version that starts with the partial version prefix
+  local version
+  version="$(echo "${response}" | jq -r --arg prefix "${partial}" \
+    '[.[] | select(.version | test("^v" + $prefix + "[\\.\\s]|^v" + $prefix + "$"))] | first | .version // empty' \
+    2>/dev/null || true)"
+
+  if [[ -z "${version}" ]]; then
+    return 1
+  fi
+
+  # Strip leading 'v'
+  echo "${version#v}"
+}
+
 # Main entry point: resolve version and set outputs
 resolve_node_version() {
   local version="${INPUT_NODE_VERSION:-}"
@@ -210,6 +237,20 @@ resolve_node_version() {
 
   # Strip leading 'v' if present
   version="${version#v}"
+
+  # Resolve partial versions (major-only or major.minor) to full version
+  # e.g., "24" -> "24.2.0", "22.12" -> "22.12.0"
+  if [[ "${version}" =~ ^[0-9]+$ || "${version}" =~ ^[0-9]+\.[0-9]+$ ]]; then
+    local resolved
+    resolved="$(resolve_partial_version "${version}")"
+    if [[ -n "${resolved}" ]]; then
+      echo "::notice::Resolved Node.js ${version} to ${resolved}"
+      version="${resolved}"
+    else
+      echo "::error::Could not resolve Node.js version: ${version}" >&2
+      return 1
+    fi
+  fi
 
   local url
   url="$(build_node_download_url "${version}")"

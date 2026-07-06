@@ -48,22 +48,38 @@ upload_sarif() {
   local payload
   payload="$(build_sarif_payload "${sarif_file}" "${category}" "${commit_sha}" "${ref}")"
 
-  local response
-  response="$(curl -fsSL \
+  local http_code response_body
+  response_body="$(mktemp)"
+
+  http_code="$(curl -sS -o "${response_body}" -w '%{http_code}' \
     -X POST \
     -H "Authorization: token ${token}" \
     -H "Accept: application/vnd.github+json" \
     -H "Content-Type: application/json" \
     -d "${payload}" \
     "https://api.github.com/repos/${repo}/code-scanning/sarifs"
-  )"
+  )" || true
 
-  local sarif_id
-  sarif_id="$(echo "${response}" | jq -r '.id // empty')"
-  if [[ -n "${sarif_id}" ]]; then
-    echo "::notice::SARIF uploaded successfully (id: ${sarif_id})"
+  local response
+  response="$(cat "${response_body}")"
+  rm -f "${response_body}"
+
+  if [[ "${http_code}" == "202" || "${http_code}" == "200" ]]; then
+    local sarif_id
+    sarif_id="$(echo "${response}" | jq -r '.id // empty')"
+    if [[ -n "${sarif_id}" ]]; then
+      echo "::notice::SARIF uploaded successfully (id: ${sarif_id})"
+    else
+      echo "::notice::SARIF upload accepted (HTTP ${http_code})"
+    fi
+  elif [[ "${http_code}" == "422" ]]; then
+    echo "::warning::SARIF upload returned HTTP 422 — this typically occurs in PR contexts where the commit SHA is not on the default branch or permissions are insufficient. Skipping upload."
+    echo "::warning::Response: ${response}"
+  elif [[ "${http_code}" == "403" ]]; then
+    echo "::warning::SARIF upload returned HTTP 403 — token lacks security-events:write permission. Skipping upload."
   else
-    echo "::warning::SARIF upload response did not contain an id: ${response}"
+    echo "::error::SARIF upload failed with HTTP ${http_code}: ${response}" >&2
+    return 1
   fi
 }
 
@@ -112,6 +128,8 @@ analyze_codeql() {
     if [[ ! -d "${db_path}" ]]; then
       continue
     fi
+    # Remove trailing slash to avoid codeql CLI issues
+    db_path="${db_path%/}"
 
     local sarif_file
     sarif_file="$(analyze_database "${db_path}" "${sarif_dir}" "${codeql_bin}")"
