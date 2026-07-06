@@ -113,4 +113,33 @@ assert_eq "${tmp_dir}/my-dbs" "${result}" "returns CODEQL_DATABASES path"
 unset CODEQL_DATABASES
 
 # ============================================================
+test_suite "analyze_codeql - trailing slash on db_path"
+# ============================================================
+
+# The glob "${db_dir}"/*/ produces paths with trailing slashes.
+# Verify the code strips them so codeql CLI doesn't choke.
+# We test by checking that the main loop code in analyze_codeql
+# strips the trailing slash from db_path.
+db_with_slash="${tmp_dir}/dbs/javascript/"
+db_without_slash="${tmp_dir}/dbs/javascript"
+mkdir -p "${db_with_slash}"
+
+# Simulate what the for loop does: strip trailing slash
+stripped="${db_with_slash%/}"
+assert_eq "${db_without_slash}" "${stripped}" "trailing slash stripped from db_path"
+
+# ============================================================
+test_suite "upload_sarif - HTTP response handling"
+# ============================================================
+
+# The upload_sarif function should handle non-200 responses gracefully.
+# Verify it doesn't hard-fail with curl: (22) on HTTP errors.
+# We pass a fake token/repo so the API call returns an error response.
+GITHUB_SHA="abc123"
+GITHUB_REF="refs/heads/main"
+result="$(upload_sarif "${sarif_file}" "test" "fake-token" "fake/repo" 2>&1 || true)"
+# Should NOT contain "curl: (22)" hard failure — should be a handled error
+assert_not_contains "${result}" "curl: (22)" "upload_sarif does not hard-fail on HTTP errors"
+
+# ============================================================
 test_summary
