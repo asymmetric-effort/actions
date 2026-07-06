@@ -189,6 +189,46 @@ resolve_node_version
 output="$(cat "${GITHUB_OUTPUT}")"
 assert_contains "${output}" "node-version=21.5.0" "version resolved from .node-version file"
 
+# ============================================================
+test_suite "resolve_partial_version"
+# ============================================================
+
+# Major-only version should resolve to a full version
+result="$(resolve_partial_version "22")"
+assert_not_empty "${result}" "major version 22 resolves to something"
+assert_contains "${result}" "22." "resolved version starts with 22."
+# Should be a full semver (major.minor.patch)
+assert_success "resolved version has three parts" bash -c "echo '${result}' | grep -qP '^\d+\.\d+\.\d+$'"
+
+# Major.minor version should resolve to a full version
+result="$(resolve_partial_version "22.12")"
+assert_not_empty "${result}" "major.minor 22.12 resolves to something"
+assert_contains "${result}" "22.12." "resolved version starts with 22.12."
+
+# ============================================================
+test_suite "resolve_node_version (major-only)"
+# ============================================================
+
+INPUT_NODE_VERSION="22"
+INPUT_NODE_VERSION_FILE=""
+INPUT_TOKEN=""
+INPUT_ARCHITECTURE="x64"
+INPUT_CACHE=""
+RUNNER_OS="Linux"
+
+true > "${GITHUB_OUTPUT}"
+resolve_node_version
+output="$(cat "${GITHUB_OUTPUT}")"
+
+# Should NOT contain "node-version=22\n" — must be a full version
+node_ver="$(echo "${output}" | grep -oP 'node-version=\K[^\n]+')"
+assert_not_contains "22\n" "${node_ver}" "major-only version is expanded"
+assert_contains "${node_ver}" "22." "resolved version starts with 22."
+assert_success "resolved version is full semver" bash -c "echo '${node_ver}' | grep -qP '^\d+\.\d+\.\d+$'"
+
+# Download URL should contain the full version, not bare major
+assert_not_contains "${output}" "/dist/v22/node-v22-" "URL does not use bare major version"
+
 # Cleanup
 unset INPUT_NODE_VERSION INPUT_NODE_VERSION_FILE INPUT_TOKEN INPUT_ARCHITECTURE INPUT_CACHE RUNNER_OS
 
