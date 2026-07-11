@@ -126,7 +126,7 @@ fetch_latest_version() {
   fi
 
   local tag_name
-  tag_name="$(printf '%s' "${response}" | jq -r '.tag_name // empty' 2>/dev/null || true)"
+  tag_name="$(jq -r '.tag_name // empty' <<< "${response}" 2>/dev/null || true)"
 
   if [[ -z "${tag_name}" ]]; then
     echo "::error::Failed to fetch latest Bun release from GitHub API" >&2
