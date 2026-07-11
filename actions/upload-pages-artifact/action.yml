@@ -46,7 +46,7 @@ runs:
 
     - name: Upload artifact
       id: upload
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
       with:
         name: github-pages
         path: ${{ steps.package.outputs.artifact-path }}
