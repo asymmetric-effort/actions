@@ -45,5 +45,12 @@ configure_npm_oidc() {
   local pkg_dir="${INPUT_PACKAGE_DIR:-.}"
   local registry="${INPUT_REGISTRY:-https://registry.npmjs.org}"
 
+  # If actions/setup-node already configured npm auth (via NPM_CONFIG_USERCONFIG),
+  # preserve it — it has the correct OIDC token setup.
+  if [[ -n "${NPM_CONFIG_USERCONFIG:-}" ]] && [[ -f "${NPM_CONFIG_USERCONFIG}" ]]; then
+    echo "::notice::Using existing .npmrc from NPM_CONFIG_USERCONFIG=${NPM_CONFIG_USERCONFIG}"
+    return 0
+  fi
+
   write_npmrc "${pkg_dir}" "${registry}"
 }
